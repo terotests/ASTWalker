@@ -649,7 +649,7 @@
 
           this.walk(node.key, ctx);
           this.walk(node.value, ctx);
-
+          this.out("", true);
           this.__insideMethod = false;
         }
       };
@@ -693,8 +693,10 @@
         var me = this;
         try {
           me.out("{");
+          var cnt = 0;
           if (node && node.properties) {
             node.properties.forEach(function (p) {
+              if (cnt++ > 0) me.out(",");
               me.trigger("ObjectExpressionProperty", p);
               me.walk(p, ctx);
             });
