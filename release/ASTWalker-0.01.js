@@ -551,9 +551,6 @@
         this._codeStr = "";
         this._currentLine = "";
         this._indent = 0;
-
-        this.walk(baseAST, contextObj, true);
-        this.out("", true);
       });
 
       /**
@@ -823,9 +820,10 @@
       _myTrait_.startWalk = function (node, ctx) {
 
         this._breakWalk = false;
-
         this._path = [];
+
         this.walk(node, ctx);
+        this.out("", true);
       };
 
       /**
