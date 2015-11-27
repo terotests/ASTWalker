@@ -32,6 +32,7 @@ Still undocumented
 
 
 - [ArrayExpression](README.md#ASTWalker_ArrayExpression)
+- [ArrayPattern](README.md#ASTWalker_ArrayPattern)
 - [ArrowExpression](README.md#ASTWalker_ArrowExpression)
 - [ArrowFunctionExpression](README.md#ASTWalker_ArrowFunctionExpression)
 - [AssignmentExpression](README.md#ASTWalker_AssignmentExpression)
@@ -41,6 +42,8 @@ Still undocumented
 - [breakWalk](README.md#ASTWalker_breakWalk)
 - [CallExpression](README.md#ASTWalker_CallExpression)
 - [CatchClause](README.md#ASTWalker_CatchClause)
+- [ClassBody](README.md#ASTWalker_ClassBody)
+- [ClassDeclaration](README.md#ASTWalker_ClassDeclaration)
 - [ConditionalExpression](README.md#ASTWalker_ConditionalExpression)
 - [ContinueStatement](README.md#ASTWalker_ContinueStatement)
 - [DebuggerStatement](README.md#ASTWalker_DebuggerStatement)
@@ -50,6 +53,7 @@ Still undocumented
 - [endCollecting](README.md#ASTWalker_endCollecting)
 - [ExpressionStatement](README.md#ASTWalker_ExpressionStatement)
 - [ForInStatement](README.md#ASTWalker_ForInStatement)
+- [ForOfStatement](README.md#ASTWalker_ForOfStatement)
 - [ForStatement](README.md#ASTWalker_ForStatement)
 - [FunctionDeclaration](README.md#ASTWalker_FunctionDeclaration)
 - [FunctionExpression](README.md#ASTWalker_FunctionExpression)
@@ -61,9 +65,11 @@ Still undocumented
 - [Literal](README.md#ASTWalker_Literal)
 - [LogicalExpression](README.md#ASTWalker_LogicalExpression)
 - [MemberExpression](README.md#ASTWalker_MemberExpression)
+- [MethodDefinition](README.md#ASTWalker_MethodDefinition)
 - [NewExpression](README.md#ASTWalker_NewExpression)
 - [nlIfNot](README.md#ASTWalker_nlIfNot)
 - [ObjectExpression](README.md#ASTWalker_ObjectExpression)
+- [ObjectPattern](README.md#ASTWalker_ObjectPattern)
 - [out](README.md#ASTWalker_out)
 - [Program](README.md#ASTWalker_Program)
 - [Property](README.md#ASTWalker_Property)
@@ -75,6 +81,7 @@ Still undocumented
 - [startBlock](README.md#ASTWalker_startBlock)
 - [startCollecting](README.md#ASTWalker_startCollecting)
 - [startWalk](README.md#ASTWalker_startWalk)
+- [Super](README.md#ASTWalker_Super)
 - [SwitchCase](README.md#ASTWalker_SwitchCase)
 - [SwitchStatement](README.md#ASTWalker_SwitchStatement)
 - [ThisExpression](README.md#ASTWalker_ThisExpression)
@@ -88,6 +95,7 @@ Still undocumented
 - [walkAsString](README.md#ASTWalker_walkAsString)
 - [WhileStatement](README.md#ASTWalker_WhileStatement)
 - [WithStatement](README.md#ASTWalker_WithStatement)
+- [YieldExpression](README.md#ASTWalker_YieldExpression)
 
 
 
@@ -144,6 +152,27 @@ if( node.elements && node.elements.length>0) {
 
 ```
 
+### <a name="ASTWalker_ArrayPattern"></a>ASTWalker::ArrayPattern(node, ctx)
+
+
+```javascript
+var me = this;
+
+// Check values...
+if( node.elements && node.elements.length>0) {
+    // Walk the array elements
+    this.out("[");
+    var cnt=0;
+    node.elements.forEach( function(e) {
+        if(cnt++>0) me.out(",");
+        me.trigger("ArrayElement", e);
+        me.walk(e, ctx);
+    })
+    this.out("]");
+}
+
+```
+
 ### <a name="ASTWalker_ArrowExpression"></a>ASTWalker::ArrowExpression(node, ctx)
 
 
@@ -165,10 +194,10 @@ if(node.generator) {
 
 if(node.id && node.id.name) {
     console.log("ERROR: ArrowFunctionExpression should not have name");
-    me.trigger("FunctionName", node);
+    this.trigger("FunctionName", node);
     this.out(" "+node.id.name+" "); 
 } else {
-    me.trigger("FunctionAnonymous", node);
+    this.trigger("FunctionAnonymous", node);
 }
 
 var me = this;
@@ -280,6 +309,46 @@ if(node.body) {
 }
 ```
 
+### <a name="ASTWalker_ClassBody"></a>ASTWalker::ClassBody(node, ctx)
+
+
+```javascript
+this.out("{", true);
+
+// walk the class body
+this.indent(1);
+this.walk(node.body, ctx);
+this.indent(-1);
+
+this.out("}", true);
+
+```
+
+### <a name="ASTWalker_ClassDeclaration"></a>ASTWalker::ClassDeclaration(node, ctx)
+
+
+```javascript
+
+this.out("class ");
+
+if(node.id) {
+    this.walk( node.id, ctx );
+    this.out(" ");
+}
+
+if(node.superClass) {
+    this.trigger("Extends", node.superClass);
+    this.out(" extends ");
+    this.walk( node.superClass, ctx);
+}
+
+if(node.body) {
+    this.walk( node.body,ctx);
+}
+
+
+```
+
 ### <a name="ASTWalker_ConditionalExpression"></a>ASTWalker::ConditionalExpression(node, ctx)
 
 
@@ -389,6 +458,31 @@ if(node.body) {
 this.out("", true);
 ```
 
+### <a name="ASTWalker_ForOfStatement"></a>ASTWalker::ForOfStatement(node, ctx)
+
+
+```javascript
+this.out("for(");
+
+if(node.left) {
+    this.trigger("ForOfLeft", node.left);
+    this.walk(node.left,ctx);
+}
+this.out(" of ");
+if(node.right) {
+    this.trigger("ForOfRight", node.right);
+    this.walk(node.right,ctx);
+}
+this.out(")");
+
+if(node.body) {
+    this.trigger("ForOfBody", node.body);
+    this.walk(node.body,ctx);
+}
+
+this.out("", true);
+```
+
 ### <a name="ASTWalker_ForStatement"></a>ASTWalker::ForStatement(node, ctx)
 
 
@@ -423,10 +517,10 @@ this.out("", true);
 this.out("function");
 
 if(node.id && node.id.name) {
-    me.trigger("FunctionName", node);
+    this.trigger("FunctionName", node);
     this.out(" "+node.id.name+" "); 
 } else {
-    me.trigger("FunctionAnonymous", node);
+    this.trigger("FunctionAnonymous", node);
 }
 
 var me = this;
@@ -457,7 +551,7 @@ this.walk(node.body, subCtx);
 
 ```javascript
 
-this.out("function");
+if(!this.__insideMethod) this.out("function");
 
 if(node.generator) {
     this.trigger("FunctionGenerator", node);
@@ -465,10 +559,10 @@ if(node.generator) {
 }
 
 if(node.id && node.id.name) {
-    me.trigger("FunctionName", node);
+    this.trigger("FunctionName", node);
     this.out(" "+node.id.name+" "); 
 } else {
-    me.trigger("FunctionAnonymous", node);
+    this.trigger("FunctionAnonymous", node);
 }
 
 var me = this;
@@ -549,19 +643,15 @@ if(this._indent<0) this._indent = 0;
 ### ASTWalker::constructor( options )
 Walks the AST tree, creates events on walk steps
 ```javascript
-this._wCb = walkCallback;
-this._structures = [];
 
-// baseAST has now the important content information for the function
-if(!contextObj) contextObj = {}
+this._structures = [];
 
 this._tabChar = "  ";
 this._codeStr = "";
 this._currentLine = "";
 this._indent = 0;
 
-this.walk( baseAST, contextObj, true );
-this.out("",true);
+this._options = options || {};
 ```
         
 ### <a name="ASTWalker_LabeledStatement"></a>ASTWalker::LabeledStatement(node, ctx)
@@ -569,10 +659,10 @@ this.out("",true);
 
 ```javascript
 
-this.walk(node.label);
+this.walk(node.label, ctx);
 this.out(":", true);
 this.indent(1);
-if(node.body) this.walk(node.body);
+if(node.body) this.walk(node.body, ctx);
 this.indent(-1);
 ```
 
@@ -609,11 +699,41 @@ interface LogicalExpression <: Expression {
 
 ```javascript
 this.trigger("MemberExpressionObject", node.object);
-this.walk(node.object);
-this.out(".");
-this.trigger("MemberExpressionProperty", node.property);
-this.walk(node.property);
+this.walk(node.object,ctx);
 
+if(node.computed) {
+    this.out("[");
+    this.trigger("MemberExpressionProperty", node.property);
+    this.walk(node.property, ctx);    
+    this.out("]");
+} else {
+    this.out(".");
+    this.trigger("MemberExpressionProperty", node.property);
+    this.walk(node.property, ctx);    
+}
+
+
+```
+
+### <a name="ASTWalker_MethodDefinition"></a>ASTWalker::MethodDefinition(node, ctx)
+
+
+```javascript
+
+if(node.key) {
+    this.__insideMethod = true;
+    
+    if(node.kind=="constructor") {
+        this.trigger("ClassConstructor", node);
+    }
+    
+    if(node.static) this.out("static ");
+    
+    this.walk(node.key,ctx);
+    this.walk(node.value, ctx);
+    this.out("", true);
+    this.__insideMethod = false;
+}
 ```
 
 ### <a name="ASTWalker_NewExpression"></a>ASTWalker::NewExpression(node, ctx)
@@ -623,7 +743,7 @@ this.walk(node.property);
 
 if(node.callee) {
     this.trigger("NewExpressionClass", node.callee);
-    this.walk(node.callee);
+    this.walk(node.callee, ctx);
     this.out("(");
     if(node.arguments) {
         var me = this,
@@ -653,8 +773,37 @@ if(this._currentLine.length > 0) this.out("", true);
 var me = this;
 try {
     me.out("{");
+    var cnt=0;
     if(node && node.properties) {
+        if(node.properties.length>1) me.out("", true);
+        me.indent(1);
         node.properties.forEach( function(p) {
+            if(cnt++>0) me.out(",", true);
+            me.trigger("ObjectExpressionProperty", p);
+            me.walk(p, ctx);
+        });
+        me.indent(-1);
+    } 
+    me.out("}");
+} catch(e) {
+    console.error(e.message);
+}
+
+
+```
+
+### <a name="ASTWalker_ObjectPattern"></a>ASTWalker::ObjectPattern(node, ctx)
+
+
+```javascript
+var me = this;
+try {
+    me.out("{");
+    var cnt=0;
+    if(node && node.properties) {
+        if(node.properties.length>1) me.out("", true);
+        node.properties.forEach( function(p) {
+            if(cnt++>0) me.out(",");
             me.trigger("ObjectExpressionProperty", p);
             me.walk(p, ctx);
         });
@@ -663,7 +812,6 @@ try {
 } catch(e) {
     console.error(e.message);
 }
-
 
 ```
 
@@ -702,7 +850,7 @@ if(str) {
 }
 
 if(newline) {
-    this._codeStr+=this._currentLine+";\n";
+    this._codeStr+=this._currentLine+"\n";
     this._currentLine = "";
 }
 ```
@@ -723,10 +871,10 @@ this.walk(node.body,ctx, true);
 // kind: "init" | "get" | "set";
 
 this.trigger("ObjectPropertyKey", node.key);
-this.walk(node.key);
+this.walk(node.key, ctx);
 this.out(":");
 this.trigger("ObjectPropertyValue", node.value);
-this.walk(node.value);
+this.walk(node.value, ctx);
 ```
 
 ### <a name="ASTWalker_pushStructure"></a>ASTWalker::pushStructure(def)
@@ -744,7 +892,7 @@ this._structures.push( def );
 
 
 ```javascript
-if(node.argument) me.trigger("RestArgument", node.argument);
+if(node.argument) this.trigger("RestArgument", node.argument);
 
 this.out(" ...");
 this.walk(node.argument, ctx);
@@ -810,9 +958,17 @@ Starts the walking of AST tree
 ```javascript
 
 this._breakWalk = false;
-
 this._path = [];
-this.walk(node,ctx);
+
+this.walk(node, ctx);
+this.out("",true);
+```
+
+### <a name="ASTWalker_Super"></a>ASTWalker::Super(node, ctx)
+
+
+```javascript
+this.out("super");
 ```
 
 ### <a name="ASTWalker_SwitchCase"></a>ASTWalker::SwitchCase(node, ctx)
@@ -821,7 +977,7 @@ this.walk(node,ctx);
 ```javascript
 
 this.out("case ");
-this.walk(node.test);
+this.walk(node.test, ctx);
 this.out(" : ", true);
 
 if(node.consequent) {
@@ -839,7 +995,7 @@ if(node.consequent) {
 
 this.out("switch(");
 
-this.walk( node.discriminant );
+this.walk( node.discriminant, ctx );
 this.out(")");
 this.out("{",true);
 
@@ -971,6 +1127,8 @@ me.walk( node.init, ctx );
 
 ```javascript
 
+if(!node) return;
+
 if(!ctx) {
     console.log("ERROR: no context defined for ", node);
     console.trace();
@@ -1053,6 +1211,22 @@ this.out("", true);
 
 ```javascript
 console.error("With statement is not supported");
+```
+
+### <a name="ASTWalker_YieldExpression"></a>ASTWalker::YieldExpression(node, ctx)
+
+
+```javascript
+
+this.out("yield ");
+this.walk(node.argument, ctx);
+
+/*
+interface YieldExpression <: Expression {
+    type: "YieldExpression";
+    argument: Expression | null;
+}
+*/
 ```
 
 
