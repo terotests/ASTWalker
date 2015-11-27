@@ -1169,7 +1169,9 @@
 
         if (node.test) {
           this.trigger("WhileTest", node.test);
+          this.out("(");
           this.walk(node.test, ctx);
+          this.out(")");
         }
         if (node.body) {
           this.walk(node.body, ctx);
