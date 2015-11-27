@@ -544,6 +544,13 @@
       /**
        * @param float t
        */
+      _myTrait_.getCode = function (t) {
+        return this._codeStr;
+      };
+
+      /**
+       * @param float t
+       */
       _myTrait_.getStructures = function (t) {
         return this._structures;
       };
@@ -909,6 +916,9 @@
 
         this._breakWalk = false;
         this._path = [];
+
+        this._codeStr = "";
+        this._currentLine = "";
 
         this.walk(node, ctx);
         this.out("", true);
