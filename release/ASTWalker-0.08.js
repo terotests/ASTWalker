@@ -1094,7 +1094,7 @@
           me.walk(vd, ctx);
           cnt++;
         });
-
+        this.out(";", true);
         this.indent(-1 * indent);
       };
 
