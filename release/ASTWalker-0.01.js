@@ -460,10 +460,10 @@
         }
 
         if (node.id && node.id.name) {
-          me.trigger("FunctionName", node);
+          this.trigger("FunctionName", node);
           this.out(" " + node.id.name + " ");
         } else {
-          me.trigger("FunctionAnonymous", node);
+          this.trigger("FunctionAnonymous", node);
         }
 
         var me = this;
