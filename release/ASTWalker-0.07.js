@@ -181,9 +181,15 @@
        */
       _myTrait_.BinaryExpression = function (node, ctx) {
 
+        // var logicals = ["==", "<=", ">=", "==", "===", "!=", ]
+
+        this.out("(");
         this.walk(node.left, ctx);
+        this.out(")");
         this.out(" " + node.operator + " ");
+        this.out("(");
         this.walk(node.right, ctx);
+        this.out(")");
       };
 
       /**
