@@ -541,16 +541,15 @@
       if (_myTrait_.__traitInit && !_myTrait_.hasOwnProperty("__traitInit")) _myTrait_.__traitInit = _myTrait_.__traitInit.slice();
       if (!_myTrait_.__traitInit) _myTrait_.__traitInit = [];
       _myTrait_.__traitInit.push(function (options) {
-        this._wCb = walkCallback;
-        this._structures = [];
 
-        // baseAST has now the important content information for the function
-        if (!contextObj) contextObj = {};
+        this._structures = [];
 
         this._tabChar = "  ";
         this._codeStr = "";
         this._currentLine = "";
         this._indent = 0;
+
+        this._options = options || {};
       });
 
       /**
