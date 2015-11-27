@@ -627,9 +627,17 @@
       _myTrait_.MemberExpression = function (node, ctx) {
         this.trigger("MemberExpressionObject", node.object);
         this.walk(node.object, ctx);
-        this.out(".");
-        this.trigger("MemberExpressionProperty", node.property);
-        this.walk(node.property, ctx);
+
+        if (node.computed) {
+          this.out("[");
+          this.trigger("MemberExpressionProperty", node.property);
+          this.walk(node.property, ctx);
+          this.out("]");
+        } else {
+          this.out(".");
+          this.trigger("MemberExpressionProperty", node.property);
+          this.walk(node.property, ctx);
+        }
       };
 
       /**
