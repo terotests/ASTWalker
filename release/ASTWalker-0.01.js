@@ -114,10 +114,10 @@
 
         if (node.id && node.id.name) {
           console.log("ERROR: ArrowFunctionExpression should not have name");
-          me.trigger("FunctionName", node);
+          this.trigger("FunctionName", node);
           this.out(" " + node.id.name + " ");
         } else {
-          me.trigger("FunctionAnonymous", node);
+          this.trigger("FunctionAnonymous", node);
         }
 
         var me = this;
