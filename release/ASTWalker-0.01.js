@@ -284,7 +284,7 @@
         if (node.superClass) {
           this.trigger("Extends", node.superClass);
           this.out(" extends ");
-          this.walk(node["extends"], ctx);
+          this.walk(node.superClass, ctx);
         }
 
         if (node.body) {
@@ -645,6 +645,8 @@
             this.trigger("ClassConstructor", node);
           }
 
+          if (node["static"]) this.out("static ");
+
           this.walk(node.key, ctx);
           this.walk(node.value, ctx);
 
@@ -848,6 +850,14 @@
 
         this.walk(node, ctx);
         this.out("", true);
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
+      _myTrait_.Super = function (node, ctx) {
+        this.out("super");
       };
 
       /**
