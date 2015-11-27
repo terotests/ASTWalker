@@ -719,6 +719,29 @@
       };
 
       /**
+       * @param float node
+       * @param float ctx
+       */
+      _myTrait_.ObjectPattern = function (node, ctx) {
+        var me = this;
+        try {
+          me.out("{");
+          var cnt = 0;
+          if (node && node.properties) {
+            if (node.properties.length > 1) me.out("", true);
+            node.properties.forEach(function (p) {
+              if (cnt++ > 0) me.out(",");
+              me.trigger("ObjectExpressionProperty", p);
+              me.walk(p, ctx);
+            });
+          }
+          me.out("}");
+        } catch (e) {
+          console.error(e.message);
+        }
+      };
+
+      /**
        * @param String str  - Code to output
        * @param Boolean newline  - if ends with newline
        */
