@@ -205,6 +205,7 @@
        * @param Object ctx
        */
       _myTrait_.BreakStatement = function (node, ctx) {
+        this.nlIfNot();
         this.out("break", true);
       };
 
@@ -321,6 +322,7 @@
        * @param Object ctx
        */
       _myTrait_.ContinueStatement = function (node, ctx) {
+        this.nlIfNot();
         this.out("continue", true);
       };
 
@@ -942,7 +944,7 @@
        * @param float ctx
        */
       _myTrait_.SwitchCase = function (node, ctx) {
-
+        this.nlIfNot();
         if (node.test) {
           this.out("case ");
           this.walk(node.test, ctx);
