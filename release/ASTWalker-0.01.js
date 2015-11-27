@@ -236,6 +236,41 @@
        * @param Object node
        * @param Object ctx
        */
+      _myTrait_.ClassBody = function (node, ctx) {
+        this.out("{", true);
+
+        // walk the class body
+        this.indent(1);
+        this.walk(node.body, ctx);
+        this.indent(-1);
+
+        this.out("}", true);
+      };
+
+      /**
+       * @param Object node
+       * @param float ctx
+       */
+      _myTrait_.ClassDeclaration = function (node, ctx) {
+
+        this.out("class ");
+
+        if (node.id) {
+          this.walk(node.id, ctx);
+          this.out(" ");
+        }
+
+        if (node.superClass) {
+          this.trigger("Extends", node.superClass);
+          this.out(" extends ");
+          this.walk(node["extends"], ctx);
+        }
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
       _myTrait_.ConditionalExpression = function (node, ctx) {
 
         this.walk(node.test, ctx);
@@ -417,7 +452,7 @@
        */
       _myTrait_.FunctionExpression = function (node, ctx) {
 
-        this.out("function");
+        if (!this.__insideMethod) this.out("function");
 
         if (node.generator) {
           this.trigger("FunctionGenerator", node);
@@ -574,6 +609,26 @@
         this.out(".");
         this.trigger("MemberExpressionProperty", node.property);
         this.walk(node.property);
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
+      _myTrait_.MethodDefinition = function (node, ctx) {
+
+        if (node.key) {
+          this.__insideMethod = true;
+
+          if (node.kind == "constructor") {
+            this.trigger("ClassConstructor", node);
+          }
+
+          this.walk(node.key, ctx);
+          this.walk(node.value, ctx);
+
+          this.__insideMethod = false;
+        }
       };
 
       /**
