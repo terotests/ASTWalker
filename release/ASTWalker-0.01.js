@@ -83,12 +83,62 @@
         if (node.elements && node.elements.length > 0) {
           // Walk the array elements
           this.out("[");
+          var cnt = 0;
           node.elements.forEach(function (e) {
+            if (cnt++ > 0) me.out(",");
             me.trigger("ArrayElement", e);
             me.walk(e, ctx);
           });
           this.out("]");
         }
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
+      _myTrait_.ArrowExpression = function (node, ctx) {};
+
+      /**
+       * @param Object node
+       * @param float ctx
+       */
+      _myTrait_.ArrowFunctionExpression = function (node, ctx) {
+
+        this.out("function");
+
+        if (node.generator) {
+          this.trigger("FunctionGenerator", node);
+          this.out("* ");
+        }
+
+        if (node.id && node.id.name) {
+          console.log("ERROR: ArrowFunctionExpression should not have name");
+          me.trigger("FunctionName", node);
+          this.out(" " + node.id.name + " ");
+        } else {
+          me.trigger("FunctionAnonymous", node);
+        }
+
+        var me = this;
+        this.out("(");
+        var cnt = 0;
+
+        node.params.forEach(function (p) {
+          if (cnt++ > 0) me.out(",");
+          me.trigger("FunctionParam", p);
+          me.walk(p, ctx);
+          if (node.defaults && node.defaults[cnt - 1]) {
+            var defP = node.defaults[cnt - 1];
+            me.out("=");
+            me.trigger("FunctionDefaultParam", defP);
+            me.walk(defP, ctx);
+          }
+        });
+
+        this.out(")");
+        me.trigger("FunctionBody", node.body);
+        this.walk(node.body, ctx);
       };
 
       /**
@@ -127,6 +177,14 @@
         this.walk(node.body, ctx, true);
         this.indent(-1);
         this.out("}");
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
+      _myTrait_.BreakStatement = function (node, ctx) {
+        this.out("break", true);
       };
 
       /**
@@ -178,6 +236,44 @@
        * @param Object node
        * @param Object ctx
        */
+      _myTrait_.ConditionalExpression = function (node, ctx) {
+
+        this.walk(node.test, ctx);
+        this.out(" ? ");
+        this.walk(node.consequent, ctx);
+        this.out(" : ");
+        this.walk(node.alternate, ctx);
+
+        /*
+        interface ConditionalExpression <: Expression {
+        type: "ConditionalExpression";
+        test: Expression;
+        alternate: Expression;
+        consequent: Expression;
+        }
+        */
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
+      _myTrait_.ContinueStatement = function (node, ctx) {
+        this.out("continue", true);
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
+      _myTrait_.DebuggerStatement = function (node, ctx) {
+        this.out("debugger;");
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
       _myTrait_.DoWhileStatement = function (node, ctx) {
         this.out("do {", true);
 
@@ -194,6 +290,11 @@
 
         this.out("", true);
       };
+
+      /**
+       * @param float t
+       */
+      _myTrait_.EmptyStatement = function (t) {};
 
       /**
        * @param float t
@@ -304,7 +405,10 @@
 
         this.out(")");
         me.trigger("FunctionBody", node.body);
-        this.walk(node.body, ctx);
+        var subCtx = {
+          parentCtx: ctx
+        };
+        this.walk(node.body, subCtx);
       };
 
       /**
@@ -344,8 +448,11 @@
         });
 
         this.out(")");
+        var subCtx = {
+          parentCtx: ctx
+        };
         me.trigger("FunctionBody", node.body);
-        this.walk(node.body, ctx);
+        this.walk(node.body, subCtx);
       };
 
       /**
@@ -415,11 +522,46 @@
       });
 
       /**
+       * @param Object node
+       * @param Object ctx
+       */
+      _myTrait_.LabeledStatement = function (node, ctx) {
+
+        this.walk(node.label);
+        this.out(":", true);
+        this.indent(1);
+        if (node.body) this.walk(node.body);
+        this.indent(-1);
+      };
+
+      /**
        * @param float node
        * @param float ctx
        */
       _myTrait_.Literal = function (node, ctx) {
         this.out(node.raw);
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
+      _myTrait_.LogicalExpression = function (node, ctx) {
+
+        if (node.left) this.walk(node.left, ctx);
+        if (node.operator) {
+          this.out(" " + node.operator + " ");
+        }
+        if (node.right) this.walk(node.right, ctx);
+
+        /*
+        interface LogicalExpression <: Expression {
+        type: "LogicalExpression";
+        operator: LogicalOperator;
+        left: Expression;
+        right: Expression;
+        }
+        */
       };
 
       /**
@@ -579,6 +721,30 @@
       };
 
       /**
+       * @param Object node
+       * @param float ctx
+       */
+      _myTrait_.SequenceExpression = function (node, ctx) {
+        if (node.expressions) {
+          var me = this;
+          var cnt = 0;
+          this.out("(");
+          node.expressions.forEach(function (n) {
+            if (cnt++ > 0) me.out(",");
+            me.walk(n, ctx);
+          });
+          this.out(")");
+        }
+      };
+
+      /**
+       * @param float t
+       */
+      _myTrait_.skip = function (t) {
+        this._skipWalk = true;
+      };
+
+      /**
        * @param float t
        */
       _myTrait_.startBlock = function (t) {
@@ -597,10 +763,60 @@
       /**
        * Starts the walking of AST tree
        * @param Node node  - AST Node
+       * @param Object ctx
        */
-      _myTrait_.startWalk = function (node) {
+      _myTrait_.startWalk = function (node, ctx) {
 
         this._breakWalk = false;
+
+        this._path = [];
+        this.walk(node, ctx);
+      };
+
+      /**
+       * @param Object node
+       * @param float ctx
+       */
+      _myTrait_.SwitchCase = function (node, ctx) {
+
+        this.out("case ");
+        this.walk(node.test);
+        this.out(" : ", true);
+
+        if (node.consequent) {
+          var me = this;
+          node.consequent.forEach(function (c) {
+            me.walk(c, ctx);
+          });
+        }
+      };
+
+      /**
+       * @param Object node
+       * @param float ctx
+       */
+      _myTrait_.SwitchStatement = function (node, ctx) {
+
+        this.out("switch(");
+
+        this.walk(node.discriminant);
+        this.out(")");
+        this.out("{", true);
+
+        var me = this;
+        node.cases.forEach(function (c) {
+          me.walk(c, ctx);
+        });
+
+        this.out("}", true);
+        /*
+        interface SwitchStatement <: Statement {
+        type: "SwitchStatement";
+        discriminant: Expression;
+        cases: [ SwitchCase ];
+        lexical: boolean;
+        }
+        */
       };
 
       /**
@@ -608,6 +824,16 @@
        */
       _myTrait_.ThisExpression = function (node) {
         this.out("this");
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
+      _myTrait_.ThrowStatement = function (node, ctx) {
+        this.out("throw ");
+        this.trigger("ThrowArgument", node.argument);
+        this.walk(node.argument, ctx);
       };
 
       /**
@@ -702,6 +928,12 @@
        */
       _myTrait_.walk = function (node, ctx, newLine) {
 
+        if (!ctx) {
+          console.log("ERROR: no context defined for ", node);
+          console.trace();
+          return;
+        }
+
         // What is going on here then...
         if (node instanceof Array) {
           var me = this;
@@ -711,14 +943,24 @@
           });
         } else {
           if (node.type) {
+            this.trigger(node.type, node);
+
+            if (this._skipWalk) {
+              this._skipWalk = false;
+              return;
+            }
+
             if (this._wCb) this._wCb(node);
 
             if (this[node.type]) {
+              this._path.push(node);
               this[node.type](node, ctx);
+              this._path.pop();
             } else {
               console.log("Did not find " + node.type);
               console.log(node);
             }
+            this.trigger("After" + node.type, node);
           }
         }
       };
@@ -760,6 +1002,14 @@
         }
 
         this.out("", true);
+      };
+
+      /**
+       * @param Object node
+       * @param float ctx
+       */
+      _myTrait_.WithStatement = function (node, ctx) {
+        console.error("With statement is not supported");
       };
     })(this);
   };
