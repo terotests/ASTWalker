@@ -753,7 +753,7 @@
        * @param float ctx
        */
       _myTrait_.RestElement = function (node, ctx) {
-        if (node.argument) me.trigger("RestArgument", node.argument);
+        if (node.argument) this.trigger("RestArgument", node.argument);
 
         this.out(" ...");
         this.walk(node.argument, ctx);
