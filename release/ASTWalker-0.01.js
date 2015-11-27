@@ -558,10 +558,10 @@
        */
       _myTrait_.LabeledStatement = function (node, ctx) {
 
-        this.walk(node.label);
+        this.walk(node.label, ctx);
         this.out(":", true);
         this.indent(1);
-        if (node.body) this.walk(node.body);
+        if (node.body) this.walk(node.body, ctx);
         this.indent(-1);
       };
 
@@ -601,10 +601,10 @@
        */
       _myTrait_.MemberExpression = function (node, ctx) {
         this.trigger("MemberExpressionObject", node.object);
-        this.walk(node.object);
+        this.walk(node.object, ctx);
         this.out(".");
         this.trigger("MemberExpressionProperty", node.property);
-        this.walk(node.property);
+        this.walk(node.property, ctx);
       };
 
       /**
@@ -733,10 +733,10 @@
         // kind: "init" | "get" | "set";
 
         this.trigger("ObjectPropertyKey", node.key);
-        this.walk(node.key);
+        this.walk(node.key, ctx);
         this.out(":");
         this.trigger("ObjectPropertyValue", node.value);
-        this.walk(node.value);
+        this.walk(node.value, ctx);
       };
 
       /**
