@@ -591,6 +591,7 @@
        */
       _myTrait_.IfStatement = function (node, ctx) {
 
+        this.nlIfNot();
         this.out("if(");
         this.trigger("IfTest", node.test);
         this.walk(node.test, ctx);
