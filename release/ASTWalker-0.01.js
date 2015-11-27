@@ -97,6 +97,27 @@
        * @param Object node
        * @param Object ctx
        */
+      _myTrait_.ArrayPattern = function (node, ctx) {
+        var me = this;
+
+        // Check values...
+        if (node.elements && node.elements.length > 0) {
+          // Walk the array elements
+          this.out("[");
+          var cnt = 0;
+          node.elements.forEach(function (e) {
+            if (cnt++ > 0) me.out(",");
+            me.trigger("ArrayElement", e);
+            me.walk(e, ctx);
+          });
+          this.out("]");
+        }
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
       _myTrait_.ArrowExpression = function (node, ctx) {};
 
       /**
@@ -264,6 +285,10 @@
           this.trigger("Extends", node.superClass);
           this.out(" extends ");
           this.walk(node["extends"], ctx);
+        }
+
+        if (node.body) {
+          this.walk(node.body, ctx);
         }
       };
 
