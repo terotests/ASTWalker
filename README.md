@@ -140,7 +140,7 @@ The class has following internal singleton variables:
 var me = this;
 
 // Check values...
-if( node.elements && node.elements.length>0) {
+if( node.elements && node.elements.length>=0) {
     // Walk the array elements
     this.out("[");
     var cnt=0;
@@ -282,7 +282,9 @@ this._breakWalk = true;
 
 ```javascript
 if(node.callee) {
+    if(node.callee.type=="FunctionExpression") this.out("(");
     this.walk(node.callee, ctx);
+    if(node.callee.type=="FunctionExpression") this.out(")");
     this.out("(");
     if(node.arguments) {
         var me = this,
@@ -434,6 +436,7 @@ this._collecting = false;
 
 ```javascript
 this.walk(node.expression, ctx);
+
 ```
 
 ### <a name="ASTWalker_ForInStatement"></a>ASTWalker::ForInStatement(node, ctx)
@@ -709,7 +712,9 @@ interface LogicalExpression <: Expression {
 
 ```javascript
 this.trigger("MemberExpressionObject", node.object);
+if(node.object.type=="FunctionExpression") this.out("(");
 this.walk(node.object,ctx);
+if(node.object.type=="FunctionExpression") this.out(")");
 
 if(node.computed) {
     this.out("[");
@@ -752,6 +757,7 @@ if(node.key) {
 ```javascript
 
 if(node.callee) {
+    this.out(" new ");
     this.trigger("NewExpressionClass", node.callee);
     this.walk(node.callee, ctx);
     this.out("(");
