@@ -11,6 +11,61 @@
   var ASTWalker_prototype = function ASTWalker_prototype() {
     // Then create the traits and subclasses for this class here...
 
+    // trait comes here...
+
+    (function (_myTrait_) {
+
+      // Initialize static variables here...
+
+      /**
+       * Binds event name to event function
+       * @param string en  - Event name
+       * @param float ef
+       */
+      _myTrait_.on = function (en, ef) {
+        if (!this._ev) this._ev = {};
+        if (!this._ev[en]) this._ev[en] = [];
+
+        this._ev[en].push(ef);
+        return this;
+      };
+
+      /**
+       * @param float name
+       * @param float fn
+       */
+      _myTrait_.removeListener = function (name, fn) {
+        if (!this._ev) return;
+        if (!this._ev[name]) return;
+
+        var list = this._ev[name];
+
+        for (var i = 0; i < list.length; i++) {
+          if (list[i] == fn) {
+            list.splice(i, 1);
+            return;
+          }
+        }
+      };
+
+      /**
+       * triggers event with data and optional function
+       * @param string en
+       * @param float data
+       * @param float fn
+       */
+      _myTrait_.trigger = function (en, data, fn) {
+
+        if (!this._ev) return;
+        if (!this._ev[en]) return;
+        var me = this;
+        this._ev[en].forEach(function (cb) {
+          cb(data, fn);
+        });
+        return this;
+      };
+    })(this);
+
     (function (_myTrait_) {
       var _cnt;
 
@@ -23,57 +78,17 @@
       _myTrait_.ArrayExpression = function (node, ctx) {
 
         var me = this;
+
         // Check values...
         if (node.elements && node.elements.length > 0) {
-
-          // determine array element types, if possible..
-          var elem_types = {},
-              pseudoArray = [];
+          // Walk the array elements
+          this.out("[");
           node.elements.forEach(function (e) {
-            if (!elem_types[e.type]) elem_types[e.type] = [];
-            elem_types[e.type].push(e);
-
-            if (typeof e.value == "number") pseudoArray.push(e.value);
+            me.trigger("ArrayElement", e);
+            me.walk(e, ctx);
           });
-
-          var cnt = 0,
-              first;
-          for (var n in elem_types) {
-            if (!first) first = elem_types[n];
-            cnt++;
-          }
-          if (cnt == 1) {
-            var type_hash = {};
-            first.forEach(function (item) {
-              type_hash[typeof item.value] = item;
-            });
-            var keys = Object.keys(type_hash);
-            if (keys.length == 1) {
-              var only_type = keys[0];
-              if (only_type == "number") {
-                // can do array of number
-                me.out("[");
-                pseudoArray.forEach(function (v, i) {
-                  if (i > 0) me.out(",");
-                  if (parseInt(v) == v) {
-                    me.out(v + ".0");
-                    return;
-                  } else {
-                    me.out(v);
-                  }
-                });
-                me.out("]");
-                return;
-              }
-              if (only_type == "string") {
-                me.out(JSON.stringify(pseudoArray));
-                return;
-              }
-            }
-          }
+          this.out("]");
         }
-
-        console.error("So far object expressions are not allowed, - TODO: create hidden class for them");
       };
 
       /**
@@ -82,11 +97,11 @@
        */
       _myTrait_.AssignmentExpression = function (node, ctx) {
 
-        if (node.operator == "=") {
-          this.walk(node.left, ctx);
-          this.out(" " + node.operator + " ");
-          this.walk(node.right, ctx);
-        }
+        this.trigger("AssigmentLeft", node.left);
+        this.walk(node.left, ctx);
+        this.out(" " + node.operator + " ");
+        this.trigger("AssigmentRight", node.right);
+        this.walk(node.right, ctx);
       };
 
       /**
@@ -95,27 +110,9 @@
        */
       _myTrait_.BinaryExpression = function (node, ctx) {
 
-        var basicOperators = ["+", "-", "*", "/", "%", "==", "<", ">", ">=", "<=", "!="];
-
-        if (basicOperators.indexOf(node.operator) >= 0) {
-          this.walk(node.left, ctx);
-          this.out(" " + node.operator + " ");
-          this.walk(node.right, ctx);
-          return;
-        }
-        if (node.operator == "==") {
-          // ...
-          this.walk(node.left, ctx);
-          this.out(" == ");
-          this.walk(node.right, ctx);
-        }
-
-        if (node.operator == "instanceof") {
-          // ...
-          this.walk(node.left, ctx);
-          this.out(" is ");
-          this.walk(node.right, ctx);
-        }
+        this.walk(node.left, ctx);
+        this.out(" " + node.operator + " ");
+        this.walk(node.right, ctx);
       };
 
       /**
@@ -130,6 +127,14 @@
         this.walk(node.body, ctx, true);
         this.indent(-1);
         this.out("}");
+      };
+
+      /**
+       * @param float t
+       */
+      _myTrait_.breakWalk = function (t) {
+
+        this._breakWalk = true;
       };
 
       /**
@@ -153,17 +158,24 @@
       };
 
       /**
-       * Basic semantics for hidden class object
-       * @param String objName  - Variable to transfer to hidden class object
+       * @param Object node
+       * @param Object ctx
        */
-      _myTrait_.createHiddenClass = function (objName) {
-        // this._walkInfo
+      _myTrait_.DoWhileStatement = function (node, ctx) {
+        this.out("do {", true);
 
-        var baseCtx = this._walkInfo.subCtxList[0];
-        var hiddenClassDef = this._analyzer.collectObjectStructure(baseCtx, objName);
+        if (node.body) {
+          this.walk(node.body, ctx);
+        }
 
-        console.log("Tried to collect hidden class for " + objName);
-        console.log(hiddenClassDef);
+        this.out(" } ");
+        if (node.test) {
+          this.out("while(");
+          this.trigger("DoWhileTest", node.test);
+          this.out(")");
+        }
+
+        this.out("", true);
       };
 
       /**
@@ -193,8 +205,34 @@
        * @param Object node
        * @param Object ctx
        */
+      _myTrait_.ForInStatement = function (node, ctx) {
+        this.out("for(");
+
+        if (node.left) {
+          this.trigger("ForInLeft", node.left);
+          this.walk(node.left, ctx);
+        }
+        this.out(" in ");
+        if (node.right) {
+          this.trigger("ForInRight", node.right);
+          this.walk(node.right, ctx);
+        }
+        this.out(")");
+
+        if (node.body) {
+          this.trigger("ForInBody", node.body);
+          this.walk(node.body, ctx);
+        }
+
+        this.out("", true);
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
       _myTrait_.ForStatement = function (node, ctx) {
-        this.out("for ");
+        this.out("for(");
 
         if (node.init) {
           this.walk(node.init, ctx);
@@ -206,8 +244,8 @@
         }
         if (node.update) {
           this.walk(node.update, ctx);
-          this.out("; ");
         }
+        this.out(")");
 
         if (node.body) {
           this.walk(node.body, ctx);
@@ -221,78 +259,34 @@
        * @param Object ctx
        */
       _myTrait_.FunctionDeclaration = function (node, ctx) {
-        /*
-        func sayHello(personName: String) -> String {
-        let greeting = "Hello, " + personName + "!"
-        return greeting
+
+        this.out("function");
+
+        if (node.id && node.id.name) {
+          me.trigger("FunctionName", node);
+          this.out(" " + node.id.name + " ");
+        } else {
+          me.trigger("FunctionAnonymous", node);
         }
-        */
-
-        // contextObj
-        // contextObj.fnDecs
-
-        if (!ctx) {
-          console.error("Context not defined!");
-          return;
-        }
-
-        if (!ctx.fnDecs || !ctx.fnDecs[node.id.name]) {
-          /*
-          console.error("Function declarations for "+node.id.name+" not found");
-          */
-          // Then declaration should have the appropriate data types...
-          this.out("// TODO: Unknown function, define metadata somewhere...", true);
-          this.out("func ");
-
-          if (node.id && node.id.name) {
-            this.out(" " + node.id.name + " ");
-          } else {
-            this.out(" UnknownFunction ");
-          }
-
-          // TODO: return value
-          this.out(" -> "); // NOT correct right now...
-          this.out(" UnknownValue ");
-
-          var me = this;
-          this.out("(");
-          var cnt = 0;
-          node.params.forEach(function (p) {
-            if (cnt++ > 0) me.out(",");
-            me.walk(p, ctx);
-          });
-          //???
-          // params.
-          /*
-          var cnt=0;
-          def.params.forEach( function(p,i) {
-          if(cnt++>0) me.out(", ");
-          me.out(p.get("n")+":"+p.get("t"))
-          });
-          */
-          this.out(")");
-          this.walk(node.body, ctx);
-          return;
-        }
-
-        var def = ctx.fnDecs[node.id.name];
-
-        // Then declaration should have the appropriate data types...
-        this.out("func ");
-        this.out(def.get("name"));
-
-        // TODO: return value
-        this.out(" -> "); // NOT correct right now...
-        this.out(def.returns.get("t") + " ");
 
         var me = this;
         this.out("(");
         var cnt = 0;
-        def.params.forEach(function (p, i) {
-          if (cnt++ > 0) me.out(", ");
-          me.out(p.get("n") + ":" + p.get("t"));
+
+        node.params.forEach(function (p) {
+          if (cnt++ > 0) me.out(",");
+          me.trigger("FunctionParam", p);
+          me.walk(p, ctx);
+          if (node.defaults && node.defaults[cnt - 1]) {
+            var defP = node.defaults[cnt - 1];
+            me.out("=");
+            me.trigger("FunctionDefaultParam", defP);
+            me.walk(defP, ctx);
+          }
         });
+
         this.out(")");
+        me.trigger("FunctionBody", node.body);
         this.walk(node.body, ctx);
       };
 
@@ -301,37 +295,40 @@
        * @param Object ctx
        */
       _myTrait_.FunctionExpression = function (node, ctx) {
-        /*
-        { (parameters) -> return type in
-        statements
+
+        this.out("function");
+
+        if (node.generator) {
+          this.trigger("FunctionGenerator", node);
+          this.out("* ");
         }
-        */
 
-        var cnt = 0;
-        node.params.forEach(function (p) {
-          if (cnt++ > 0) me.out(",");
-          me.walk(p, ctx);
-        });
-
-        // TODO: return value
-        this.out(" -> "); // NOT correct right now...
-        this.out(" UnknownValue ");
+        if (node.id && node.id.name) {
+          me.trigger("FunctionName", node);
+          this.out(" " + node.id.name + " ");
+        } else {
+          me.trigger("FunctionAnonymous", node);
+        }
 
         var me = this;
         this.out("(");
+        var cnt = 0;
 
-        //???
-        // params.
-        /*
-        var cnt=0;
-        def.params.forEach( function(p,i) {
-        if(cnt++>0) me.out(", ");
-        me.out(p.get("n")+":"+p.get("t"))
+        node.params.forEach(function (p) {
+          if (cnt++ > 0) me.out(",");
+          me.trigger("FunctionParam", p);
+          me.walk(p, ctx);
+          if (node.defaults && node.defaults[cnt - 1]) {
+            var defP = node.defaults[cnt - 1];
+            me.out("=");
+            me.trigger("FunctionDefaultParam", defP);
+            me.walk(defP, ctx);
+          }
         });
-        */
+
         this.out(")");
+        me.trigger("FunctionBody", node.body);
         this.walk(node.body, ctx);
-        return;
       };
 
       /**
@@ -357,13 +354,16 @@
       _myTrait_.IfStatement = function (node, ctx) {
 
         this.out("if(");
+        this.trigger("IfTest", node.test);
         this.walk(node.test, ctx);
         this.out(")");
         if (node.consequent) {
+          this.trigger("IfConsequent", node.consequent);
           this.walk(node.consequent, ctx);
         }
         if (node.alternate) {
           this.out(" else ");
+          this.trigger("IfAlternate", node.alternate);
           this.walk(node.alternate, ctx);
         }
 
@@ -381,37 +381,12 @@
 
       if (_myTrait_.__traitInit && !_myTrait_.hasOwnProperty("__traitInit")) _myTrait_.__traitInit = _myTrait_.__traitInit.slice();
       if (!_myTrait_.__traitInit) _myTrait_.__traitInit = [];
-      _myTrait_.__traitInit.push(function (codeStr, fnObj, structDefs, walkCallback) {
-
-        var pw = AnalyzeFunc();
-        var baseAST = esprima.parse(codeStr, {
-          loc: true,
-          range: true,
-          comment: true
-        });
-
-        // walk the AST tree to create some meta-information out of it...
-        var ctx = pw.primaWalk(baseAST, function () {
-          return true;
-        }, function () {}, {});
-
-        this._analyzer = pw;
-        this._walkInfo = ctx;
-        this._fnObj = fnObj;
-        this._structDefs = structDefs;
+      _myTrait_.__traitInit.push(function (options) {
         this._wCb = walkCallback;
-
-        // currently evaluated function
-        if (fnObj) ctx.currentFn = fnObj.get("name");
-
         this._structures = [];
 
         // baseAST has now the important content information for the function
-
-        var contextObj = {};
-
-        if (!contextObj.fnDecs) contextObj.fnDecs = {};
-        if (fnObj) contextObj.fnDecs[fnObj.get("name")] = fnObj;
+        if (!contextObj) contextObj = {};
 
         this._tabChar = "  ";
         this._codeStr = "";
@@ -435,8 +410,10 @@
        * @param float ctx
        */
       _myTrait_.MemberExpression = function (node, ctx) {
+        this.trigger("MemberExpressionObject", node.object);
         this.walk(node.object);
         this.out(".");
+        this.trigger("MemberExpressionProperty", node.property);
         this.walk(node.property);
       };
 
@@ -447,13 +424,14 @@
       _myTrait_.NewExpression = function (node, ctx) {
 
         if (node.callee) {
-
+          this.trigger("NewExpressionClass", node.callee);
           this.walk(node.callee);
           this.out("(");
           if (node.arguments) {
             var me = this,
                 cnt = 0;
             node.arguments.forEach(function (n) {
+              me.trigger("NewExpressionArgument", n);
               if (cnt++ > 0) me.out(", ");
               me.walk(n, ctx);
             });
@@ -475,70 +453,19 @@
        */
       _myTrait_.ObjectExpression = function (node, ctx) {
 
-        // Object must have a hidden class to be created...
-        console.log("So far object expressions are not allowed, - TODO: create hidden class for them");
-
-        // this.createHiddenClass();
-        /*
-        struct Resolution {
-        var width = 0
-        var height = 0
-        }
-        */
-        // collect hidden class definition;
-        if (!_cnt) _cnt = 1;
-        var ok = true;
         var me = this;
         try {
-          var structDef = {
-            name: "TmpStructure" + _cnt++,
-            rawStr: "",
-            varDefs: []
-          };
-          console.log(node);
-          var _resStr = "struct " + structDef.name + " { ";
+          me.out("{");
           if (node && node.properties) {
-            console.log("-> trying to create " + structDef.name);
             node.properties.forEach(function (p) {
-              if (p.type == "Property" && p.key && p.value && p.value.raw) {
-                structDef.varDefs.push({
-                  name: p.key.name,
-                  value: p.value.value,
-                  raw: p.value.raw
-                });
-                _resStr += "var " + p.key.name + " = " + p.value.raw + "\n";
-                return;
-              } else {}
-              ok = false;
-              console.error("Object property not declared:", p);
+              me.trigger("ObjectExpressionProperty", p);
+              me.walk(p, ctx);
             });
-          } else {
-            console.log("Invalid properties node");
-            ok = false;
           }
-          _resStr += "} \n";
-          if (ok) {
-            structDef.rawStr = _resStr;
-          }
-          if (ok) {
-            this.pushStructure(structDef);
-          }
-          if (ok) {
-            // Resolution(width: 1920, height: 1080)
-            var me = this;
-            me.out(structDef.name + "(");
-            var cnt = 0;
-            structDef.varDefs.forEach(function (v) {
-              if (cnt++ > 0) me.out(",");
-              me.out(v.name + ":" + v.raw);
-            });
-            me.out(")");
-          }
+          me.out("}");
         } catch (e) {
           console.error(e.message);
         }
-
-        // this.out("",)
       };
 
       /**
@@ -573,7 +500,7 @@
         }
 
         if (newline) {
-          this._codeStr += this._currentLine + "\n";
+          this._codeStr += this._currentLine + ";\n";
           this._currentLine = "";
         }
       };
@@ -588,6 +515,21 @@
       };
 
       /**
+       * @param Object node
+       * @param float ctx
+       */
+      _myTrait_.Property = function (node, ctx) {
+
+        // kind: "init" | "get" | "set";
+
+        this.trigger("ObjectPropertyKey", node.key);
+        this.walk(node.key);
+        this.out(":");
+        this.trigger("ObjectPropertyValue", node.value);
+        this.walk(node.value);
+      };
+
+      /**
        * @param Object def  - Structure definition
        */
       _myTrait_.pushStructure = function (def) {
@@ -597,13 +539,26 @@
       };
 
       /**
+       * @param Object node
+       * @param float ctx
+       */
+      _myTrait_.RestElement = function (node, ctx) {
+        if (node.argument) me.trigger("RestArgument", node.argument);
+
+        this.out(" ...");
+        this.walk(node.argument, ctx);
+      };
+
+      /**
        * @param float node
        * @param float ctx
        */
       _myTrait_.ReturnStatement = function (node, ctx) {
 
         this.out("return ");
+        this.trigger("ReturnValue", node.argument);
         this.walk(node.argument, ctx);
+        this.out(";");
       };
 
       /**
@@ -623,10 +578,19 @@
       };
 
       /**
+       * Starts the walking of AST tree
+       * @param Node node  - AST Node
+       */
+      _myTrait_.startWalk = function (node) {
+
+        this._breakWalk = false;
+      };
+
+      /**
        * @param float node
        */
       _myTrait_.ThisExpression = function (node) {
-        this.out("self");
+        this.out("this");
       };
 
       /**
@@ -635,6 +599,7 @@
        */
       _myTrait_.UnaryExpression = function (node, ctx) {
         this.out(node.operator);
+        this.trigger("UnaryExpressionArgument", node.argument);
         this.walk(node.argument, ctx);
       };
 
@@ -644,6 +609,7 @@
        */
       _myTrait_.UpdateExpression = function (node, ctx) {
 
+        this.trigger("UpdateExpressionArgument", node.argument);
         this.walk(node.argument, ctx);
         this.out(node.operator);
       };
@@ -656,17 +622,22 @@
 
         var me = this;
         var cnt = 0;
+        if (node.kind == "var") me.out("var ");
+        if (node.kind == "let") me.out("let ");
+        var indent = 0;
         node.declarations.forEach(function (vd) {
           if (cnt++ > 0) {
-            me.out("", true); // always a new declaration
+            if (cnt == 1) {
+              indent++;
+              me.indent(1);
+            }
+            me.out(",", true); // always a new declaration
           }
-          if (node.kind == "var") me.out("var ");
-          if (node.kind == "let") me.out("let ");
           me.walk(vd, ctx);
-          //me.out("=");
-          //me.walk(vd.init,ctx);
           cnt++;
         });
+
+        this.indent(-1 * indent);
       };
 
       /**
@@ -676,11 +647,8 @@
       _myTrait_.VariableDeclarator = function (node, ctx) {
         var me = this;
 
-        // let greeting = "Hello, " + personName + "!"
-
         me.out(node.id.name + " = ");
         me.walk(node.init, ctx);
-        // me.out("", true);
       };
 
       /**
@@ -740,6 +708,7 @@
         this.out("while ");
 
         if (node.test) {
+          this.trigger("WhileTest", node.test);
           this.walk(node.test, ctx);
         }
         if (node.body) {
@@ -797,5 +766,3 @@
     define(__amdDefs__);
   }
 }).call(new Function("return this")());
-
-// Object definitions will be left as excercie yet....
