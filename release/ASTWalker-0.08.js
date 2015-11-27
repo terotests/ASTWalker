@@ -183,13 +183,24 @@
 
         // var logicals = ["==", "<=", ">=", "==", "===", "!=", ]
 
-        this.out("(");
+        var bLeftNeedsPar = true,
+            bRightNeedsPar = true;
+        if (node.left.type == "Identifier" || node.left.type == "Literal") {
+          bLeftNeedsPar = false;
+        }
+        if (node.right.type == "Identifier" || node.right.type == "Literal") {
+          bRightNeedsPar = false;
+        }
+
+        if (bLeftNeedsPar) this.out("(");
         this.walk(node.left, ctx);
-        this.out(")");
+        if (bLeftNeedsPar) this.out(")");
+
         this.out(" " + node.operator + " ");
-        this.out("(");
+
+        if (bRightNeedsPar) this.out("(");
         this.walk(node.right, ctx);
-        this.out(")");
+        if (bRightNeedsPar) this.out(")");
       };
 
       /**
