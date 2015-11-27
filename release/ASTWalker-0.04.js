@@ -80,7 +80,7 @@
         var me = this;
 
         // Check values...
-        if (node.elements && node.elements.length > 0) {
+        if (node.elements && node.elements.length >= 0) {
           // Walk the array elements
           this.out("[");
           var cnt = 0;
@@ -661,7 +661,9 @@
        */
       _myTrait_.MemberExpression = function (node, ctx) {
         this.trigger("MemberExpressionObject", node.object);
+        if (node.object.type == "FunctionExpression") this.out("(");
         this.walk(node.object, ctx);
+        if (node.object.type == "FunctionExpression") this.out(")");
 
         if (node.computed) {
           this.out("[");
