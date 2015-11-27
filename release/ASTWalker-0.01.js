@@ -635,7 +635,7 @@
 
         if (node.callee) {
           this.trigger("NewExpressionClass", node.callee);
-          this.walk(node.callee);
+          this.walk(node.callee, ctx);
           this.out("(");
           if (node.arguments) {
             var me = this,
