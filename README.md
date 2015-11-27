@@ -1,10 +1,12 @@
 
-Still undocumented
 
 ```javascript
 
- // Sorry.
- 
+    var walker = ASTWalker();
+    var rawAST = esprima.parse(codeStr, { loc : true, range : true, comment : true});
+    walker.startWalk( rawAST, {} );
+    var code = walker.getCode();
+
 ``` 
 
 
@@ -57,6 +59,7 @@ Still undocumented
 - [ForStatement](README.md#ASTWalker_ForStatement)
 - [FunctionDeclaration](README.md#ASTWalker_FunctionDeclaration)
 - [FunctionExpression](README.md#ASTWalker_FunctionExpression)
+- [getCode](README.md#ASTWalker_getCode)
 - [getStructures](README.md#ASTWalker_getStructures)
 - [Identifier](README.md#ASTWalker_Identifier)
 - [IfStatement](README.md#ASTWalker_IfStatement)
@@ -491,12 +494,12 @@ this.out("for(");
 
 if(node.init) {
     this.walk(node.init,ctx);
-    this.out("; ");
 }
+this.out("; ");
 if(node.test) {
     this.walk(node.test,ctx);
-    this.out("; ");
 }
+this.out("; ");
 if(node.update) {
     this.walk(node.update,ctx);
 }
@@ -586,6 +589,13 @@ var subCtx = { parentCtx : ctx };
 me.trigger("FunctionBody", node.body);
 this.walk(node.body, subCtx);    
 
+```
+
+### <a name="ASTWalker_getCode"></a>ASTWalker::getCode(t)
+
+
+```javascript
+return this._codeStr;
 ```
 
 ### <a name="ASTWalker_getStructures"></a>ASTWalker::getStructures(t)
@@ -960,6 +970,9 @@ Starts the walking of AST tree
 this._breakWalk = false;
 this._path = [];
 
+this._codeStr = "";
+this._currentLine = "";
+
 this.walk(node, ctx);
 this.out("",true);
 ```
@@ -976,9 +989,13 @@ this.out("super");
 
 ```javascript
 
-this.out("case ");
-this.walk(node.test, ctx);
-this.out(" : ", true);
+if(node.test) {
+    this.out("case ");
+    this.walk(node.test, ctx);
+    this.out(" : ", true);
+} else {
+    this.out("default: ", true);
+}
 
 if(node.consequent) {
     var me = this;
@@ -999,11 +1016,12 @@ this.walk( node.discriminant, ctx );
 this.out(")");
 this.out("{",true);
 
+this.indent(1);
 var me = this;
 node.cases.forEach(function(c) {
     me.walk(c,ctx);
 })
-
+this.indent(-1);
 this.out("}",true);
 /*
 interface SwitchStatement <: Statement {
