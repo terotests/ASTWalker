@@ -928,6 +928,8 @@
        */
       _myTrait_.walk = function (node, ctx, newLine) {
 
+        if (!node) return;
+
         if (!ctx) {
           console.log("ERROR: no context defined for ", node);
           console.trace();
@@ -1010,6 +1012,23 @@
        */
       _myTrait_.WithStatement = function (node, ctx) {
         console.error("With statement is not supported");
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
+      _myTrait_.YieldExpression = function (node, ctx) {
+
+        this.out("yield ");
+        this.walk(node.argument, ctx);
+
+        /*
+        interface YieldExpression <: Expression {
+        type: "YieldExpression";
+        argument: Expression | null;
+        }
+        */
       };
     })(this);
   };
