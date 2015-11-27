@@ -706,6 +706,7 @@
       _myTrait_.NewExpression = function (node, ctx) {
 
         if (node.callee) {
+          this.out(" new ");
           this.trigger("NewExpressionClass", node.callee);
           this.walk(node.callee, ctx);
           this.out("(");
