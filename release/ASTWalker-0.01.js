@@ -409,6 +409,32 @@
        * @param Object node
        * @param Object ctx
        */
+      _myTrait_.ForOfStatement = function (node, ctx) {
+        this.out("for(");
+
+        if (node.left) {
+          this.trigger("ForOfLeft", node.left);
+          this.walk(node.left, ctx);
+        }
+        this.out(" of ");
+        if (node.right) {
+          this.trigger("ForOfRight", node.right);
+          this.walk(node.right, ctx);
+        }
+        this.out(")");
+
+        if (node.body) {
+          this.trigger("ForOfBody", node.body);
+          this.walk(node.body, ctx);
+        }
+
+        this.out("", true);
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
       _myTrait_.ForStatement = function (node, ctx) {
         this.out("for(");
 
