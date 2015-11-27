@@ -952,11 +952,12 @@
         this.out(")");
         this.out("{", true);
 
+        this.indent(1);
         var me = this;
         node.cases.forEach(function (c) {
           me.walk(c, ctx);
         });
-
+        this.indent(-1);
         this.out("}", true);
         /*
         interface SwitchStatement <: Statement {
