@@ -28,58 +28,58 @@ Still undocumented
 
 
    
-#### Class ASTSwift
+#### Class ASTWalker
 
 
-- [ArrayExpression](README.md#ASTSwift_ArrayExpression)
-- [AssignmentExpression](README.md#ASTSwift_AssignmentExpression)
-- [BinaryExpression](README.md#ASTSwift_BinaryExpression)
-- [BlockStatement](README.md#ASTSwift_BlockStatement)
-- [CallExpression](README.md#ASTSwift_CallExpression)
-- [createHiddenClass](README.md#ASTSwift_createHiddenClass)
-- [endBlock](README.md#ASTSwift_endBlock)
-- [endCollecting](README.md#ASTSwift_endCollecting)
-- [ExpressionStatement](README.md#ASTSwift_ExpressionStatement)
-- [ForStatement](README.md#ASTSwift_ForStatement)
-- [FunctionDeclaration](README.md#ASTSwift_FunctionDeclaration)
-- [FunctionExpression](README.md#ASTSwift_FunctionExpression)
-- [getStructures](README.md#ASTSwift_getStructures)
-- [Identifier](README.md#ASTSwift_Identifier)
-- [IfStatement](README.md#ASTSwift_IfStatement)
-- [indent](README.md#ASTSwift_indent)
-- [Literal](README.md#ASTSwift_Literal)
-- [MemberExpression](README.md#ASTSwift_MemberExpression)
-- [NewExpression](README.md#ASTSwift_NewExpression)
-- [nlIfNot](README.md#ASTSwift_nlIfNot)
-- [ObjectExpression](README.md#ASTSwift_ObjectExpression)
-- [out](README.md#ASTSwift_out)
-- [Program](README.md#ASTSwift_Program)
-- [pushStructure](README.md#ASTSwift_pushStructure)
-- [ReturnStatement](README.md#ASTSwift_ReturnStatement)
-- [startBlock](README.md#ASTSwift_startBlock)
-- [startCollecting](README.md#ASTSwift_startCollecting)
-- [ThisExpression](README.md#ASTSwift_ThisExpression)
-- [UnaryExpression](README.md#ASTSwift_UnaryExpression)
-- [UpdateExpression](README.md#ASTSwift_UpdateExpression)
-- [VariableDeclaration](README.md#ASTSwift_VariableDeclaration)
-- [VariableDeclarator](README.md#ASTSwift_VariableDeclarator)
-- [walk](README.md#ASTSwift_walk)
-- [walkAsString](README.md#ASTSwift_walkAsString)
-- [WhileStatement](README.md#ASTSwift_WhileStatement)
+- [ArrayExpression](README.md#ASTWalker_ArrayExpression)
+- [AssignmentExpression](README.md#ASTWalker_AssignmentExpression)
+- [BinaryExpression](README.md#ASTWalker_BinaryExpression)
+- [BlockStatement](README.md#ASTWalker_BlockStatement)
+- [CallExpression](README.md#ASTWalker_CallExpression)
+- [createHiddenClass](README.md#ASTWalker_createHiddenClass)
+- [endBlock](README.md#ASTWalker_endBlock)
+- [endCollecting](README.md#ASTWalker_endCollecting)
+- [ExpressionStatement](README.md#ASTWalker_ExpressionStatement)
+- [ForStatement](README.md#ASTWalker_ForStatement)
+- [FunctionDeclaration](README.md#ASTWalker_FunctionDeclaration)
+- [FunctionExpression](README.md#ASTWalker_FunctionExpression)
+- [getStructures](README.md#ASTWalker_getStructures)
+- [Identifier](README.md#ASTWalker_Identifier)
+- [IfStatement](README.md#ASTWalker_IfStatement)
+- [indent](README.md#ASTWalker_indent)
+- [Literal](README.md#ASTWalker_Literal)
+- [MemberExpression](README.md#ASTWalker_MemberExpression)
+- [NewExpression](README.md#ASTWalker_NewExpression)
+- [nlIfNot](README.md#ASTWalker_nlIfNot)
+- [ObjectExpression](README.md#ASTWalker_ObjectExpression)
+- [out](README.md#ASTWalker_out)
+- [Program](README.md#ASTWalker_Program)
+- [pushStructure](README.md#ASTWalker_pushStructure)
+- [ReturnStatement](README.md#ASTWalker_ReturnStatement)
+- [startBlock](README.md#ASTWalker_startBlock)
+- [startCollecting](README.md#ASTWalker_startCollecting)
+- [ThisExpression](README.md#ASTWalker_ThisExpression)
+- [UnaryExpression](README.md#ASTWalker_UnaryExpression)
+- [UpdateExpression](README.md#ASTWalker_UpdateExpression)
+- [VariableDeclaration](README.md#ASTWalker_VariableDeclaration)
+- [VariableDeclarator](README.md#ASTWalker_VariableDeclarator)
+- [walk](README.md#ASTWalker_walk)
+- [walkAsString](README.md#ASTWalker_walkAsString)
+- [WhileStatement](README.md#ASTWalker_WhileStatement)
 
+
+
+   
 
 
    
 
 
-   
-
-
 
 
 
    
-# Class ASTSwift
+# Class ASTWalker
 
 
 The class has following internal singleton variables:
@@ -87,7 +87,7 @@ The class has following internal singleton variables:
 * _cnt
         
         
-### <a name="ASTSwift_ArrayExpression"></a>ASTSwift::ArrayExpression(node, ctx)
+### <a name="ASTWalker_ArrayExpression"></a>ASTWalker::ArrayExpression(node, ctx)
 
 
 ```javascript
@@ -149,7 +149,7 @@ console.error("So far object expressions are not allowed, - TODO: create hidden 
 
 ```
 
-### <a name="ASTSwift_AssignmentExpression"></a>ASTSwift::AssignmentExpression(node, ctx)
+### <a name="ASTWalker_AssignmentExpression"></a>ASTWalker::AssignmentExpression(node, ctx)
 
 
 ```javascript
@@ -162,7 +162,7 @@ if(node.operator == "=") {
 
 ```
 
-### <a name="ASTSwift_BinaryExpression"></a>ASTSwift::BinaryExpression(node, ctx)
+### <a name="ASTWalker_BinaryExpression"></a>ASTWalker::BinaryExpression(node, ctx)
 
 
 ```javascript
@@ -190,7 +190,7 @@ if(node.operator == "instanceof") {
 }
 ```
 
-### <a name="ASTSwift_BlockStatement"></a>ASTSwift::BlockStatement(node, ctx)
+### <a name="ASTWalker_BlockStatement"></a>ASTWalker::BlockStatement(node, ctx)
 
 
 ```javascript
@@ -203,7 +203,7 @@ this.indent(-1);
 this.out("}");
 ```
 
-### <a name="ASTSwift_CallExpression"></a>ASTSwift::CallExpression(node, ctx)
+### <a name="ASTWalker_CallExpression"></a>ASTWalker::CallExpression(node, ctx)
 
 
 ```javascript
@@ -222,7 +222,7 @@ if(node.callee) {
 }
 ```
 
-### <a name="ASTSwift_createHiddenClass"></a>ASTSwift::createHiddenClass(objName)
+### <a name="ASTWalker_createHiddenClass"></a>ASTWalker::createHiddenClass(objName)
 `objName` Variable to transfer to hidden class object
  
 
@@ -237,7 +237,7 @@ console.log("Tried to collect hidden class for "+objName);
 console.log(hiddenClassDef);
 ```
 
-### <a name="ASTSwift_endBlock"></a>ASTSwift::endBlock(t)
+### <a name="ASTWalker_endBlock"></a>ASTWalker::endBlock(t)
 
 
 ```javascript
@@ -245,21 +245,21 @@ this.out("}", true);
 this.indent(-1);
 ```
 
-### <a name="ASTSwift_endCollecting"></a>ASTSwift::endCollecting(t)
+### <a name="ASTWalker_endCollecting"></a>ASTWalker::endCollecting(t)
 
 
 ```javascript
 this._collecting = false;
 ```
 
-### <a name="ASTSwift_ExpressionStatement"></a>ASTSwift::ExpressionStatement(node, ctx)
+### <a name="ASTWalker_ExpressionStatement"></a>ASTWalker::ExpressionStatement(node, ctx)
 
 
 ```javascript
 this.walk(node.expression, ctx);
 ```
 
-### <a name="ASTSwift_ForStatement"></a>ASTSwift::ForStatement(node, ctx)
+### <a name="ASTWalker_ForStatement"></a>ASTWalker::ForStatement(node, ctx)
 
 
 ```javascript
@@ -285,7 +285,7 @@ if(node.body) {
 this.out("", true);
 ```
 
-### <a name="ASTSwift_FunctionDeclaration"></a>ASTSwift::FunctionDeclaration(node, ctx)
+### <a name="ASTWalker_FunctionDeclaration"></a>ASTWalker::FunctionDeclaration(node, ctx)
 
 
 ```javascript
@@ -366,7 +366,7 @@ this.walk(node.body, ctx);
 
 ```
 
-### <a name="ASTSwift_FunctionExpression"></a>ASTSwift::FunctionExpression(node, ctx)
+### <a name="ASTWalker_FunctionExpression"></a>ASTWalker::FunctionExpression(node, ctx)
 
 
 ```javascript
@@ -404,14 +404,14 @@ this.walk(node.body, ctx);
 return;
 ```
 
-### <a name="ASTSwift_getStructures"></a>ASTSwift::getStructures(t)
+### <a name="ASTWalker_getStructures"></a>ASTWalker::getStructures(t)
 
 
 ```javascript
 return this._structures;
 ```
 
-### <a name="ASTSwift_Identifier"></a>ASTSwift::Identifier(node, ctx)
+### <a name="ASTWalker_Identifier"></a>ASTWalker::Identifier(node, ctx)
 `node` Node to walk
  
 `ctx` Context to use
@@ -423,7 +423,7 @@ return this._structures;
 this.out(node.name);
 ```
 
-### <a name="ASTSwift_IfStatement"></a>ASTSwift::IfStatement(node, ctx)
+### <a name="ASTWalker_IfStatement"></a>ASTWalker::IfStatement(node, ctx)
 
 
 ```javascript
@@ -442,7 +442,7 @@ if(node.alternate) {
 this.out("", true);
 ```
 
-### <a name="ASTSwift_indent"></a>ASTSwift::indent(change)
+### <a name="ASTWalker_indent"></a>ASTWalker::indent(change)
 `change` Delta to modify the indent
  
 
@@ -453,7 +453,7 @@ this._indent += change;
 if(this._indent<0) this._indent = 0;
 ```
 
-### ASTSwift::constructor( codeStr, fnObj, structDefs )
+### ASTWalker::constructor( codeStr, fnObj, structDefs, walkCallback )
 Function to walk AST tree of a function contents and create corresponding Swift code out of it
 ```javascript
 
@@ -471,9 +471,10 @@ this._analyzer = pw;
 this._walkInfo = ctx;
 this._fnObj = fnObj;
 this._structDefs = structDefs;
+this._wCb = walkCallback;
 
 // currently evaluated function
-ctx.currentFn = fnObj.get("name");
+if(fnObj) ctx.currentFn = fnObj.get("name");
 
 this._structures = [];
 
@@ -482,7 +483,7 @@ this._structures = [];
 var contextObj = {}
 
 if(!contextObj.fnDecs) contextObj.fnDecs = {};
-contextObj.fnDecs[fnObj.get("name")] = fnObj;
+if(fnObj) contextObj.fnDecs[fnObj.get("name")] = fnObj;
 
 this._tabChar = "  ";
 this._codeStr = "";
@@ -494,14 +495,14 @@ this.out("",true);
 
 ```
         
-### <a name="ASTSwift_Literal"></a>ASTSwift::Literal(node, ctx)
+### <a name="ASTWalker_Literal"></a>ASTWalker::Literal(node, ctx)
 
 
 ```javascript
 this.out(node.raw);
 ```
 
-### <a name="ASTSwift_MemberExpression"></a>ASTSwift::MemberExpression(node, ctx)
+### <a name="ASTWalker_MemberExpression"></a>ASTWalker::MemberExpression(node, ctx)
 
 
 ```javascript
@@ -511,7 +512,7 @@ this.walk(node.property);
 
 ```
 
-### <a name="ASTSwift_NewExpression"></a>ASTSwift::NewExpression(node, ctx)
+### <a name="ASTWalker_NewExpression"></a>ASTWalker::NewExpression(node, ctx)
 
 
 ```javascript
@@ -532,14 +533,14 @@ if(node.callee) {
 }
 ```
 
-### <a name="ASTSwift_nlIfNot"></a>ASTSwift::nlIfNot(t)
+### <a name="ASTWalker_nlIfNot"></a>ASTWalker::nlIfNot(t)
 
 
 ```javascript
 if(this._currentLine.length > 0) this.out("", true);
 ```
 
-### <a name="ASTSwift_ObjectExpression"></a>ASTSwift::ObjectExpression(node, ctx)
+### <a name="ASTWalker_ObjectExpression"></a>ASTWalker::ObjectExpression(node, ctx)
 
 
 ```javascript
@@ -572,7 +573,8 @@ try {
             if(p.type=="Property" && p.key && p.value && p.value.raw) {
                 structDef.varDefs.push({
                     name : p.key.name,
-                    value : p.value.value
+                    value : p.value.value,
+                    raw : p.value.raw
                 });
                 _resStr+="var "+p.key.name+" = "+p.value.raw+"\n";
                 return;
@@ -601,7 +603,7 @@ try {
         var cnt=0;
         structDef.varDefs.forEach( function(v) {
             if(cnt++>0) me.out(",");
-            me.out(v.name+":"+v.value);
+            me.out(v.name+":"+v.raw);
         })
         me.out(")");
     }
@@ -613,7 +615,7 @@ try {
 
 ```
 
-### <a name="ASTSwift_out"></a>ASTSwift::out(str, newline)
+### <a name="ASTWalker_out"></a>ASTWalker::out(str, newline)
 `str` Code to output
  
 `newline` if ends with newline 
@@ -653,7 +655,7 @@ if(newline) {
 }
 ```
 
-### <a name="ASTSwift_Program"></a>ASTSwift::Program(node, ctx)
+### <a name="ASTWalker_Program"></a>ASTWalker::Program(node, ctx)
 
 
 ```javascript
@@ -661,7 +663,7 @@ if(newline) {
 this.walk(node.body,ctx, true);
 ```
 
-### <a name="ASTSwift_pushStructure"></a>ASTSwift::pushStructure(def)
+### <a name="ASTWalker_pushStructure"></a>ASTWalker::pushStructure(def)
 `def` Structure definition
  
 
@@ -672,17 +674,17 @@ if(!this._structures) this._structures = [];
 this._structures.push( def );
 ```
 
-### <a name="ASTSwift_ReturnStatement"></a>ASTSwift::ReturnStatement(node, ctx)
+### <a name="ASTWalker_ReturnStatement"></a>ASTWalker::ReturnStatement(node, ctx)
 
 
 ```javascript
 
-this.out(" return ");
+this.out("return ");
 this.walk(node.argument, ctx);
 
 ```
 
-### <a name="ASTSwift_startBlock"></a>ASTSwift::startBlock(t)
+### <a name="ASTWalker_startBlock"></a>ASTWalker::startBlock(t)
 
 
 ```javascript
@@ -691,7 +693,7 @@ this.out("{", true);
 this.indent(1);
 ```
 
-### <a name="ASTSwift_startCollecting"></a>ASTSwift::startCollecting(t)
+### <a name="ASTWalker_startCollecting"></a>ASTWalker::startCollecting(t)
 
 
 ```javascript
@@ -699,14 +701,14 @@ this._collecting = true;
 
 ```
 
-### <a name="ASTSwift_ThisExpression"></a>ASTSwift::ThisExpression(node)
+### <a name="ASTWalker_ThisExpression"></a>ASTWalker::ThisExpression(node)
 
 
 ```javascript
 this.out("self");
 ```
 
-### <a name="ASTSwift_UnaryExpression"></a>ASTSwift::UnaryExpression(node, ctx)
+### <a name="ASTWalker_UnaryExpression"></a>ASTWalker::UnaryExpression(node, ctx)
 
 
 ```javascript
@@ -715,7 +717,7 @@ this.walk(node.argument,ctx);
 
 ```
 
-### <a name="ASTSwift_UpdateExpression"></a>ASTSwift::UpdateExpression(node, ctx)
+### <a name="ASTWalker_UpdateExpression"></a>ASTWalker::UpdateExpression(node, ctx)
 
 
 ```javascript
@@ -724,7 +726,7 @@ this.walk(node.argument, ctx)
 this.out(node.operator);
 ```
 
-### <a name="ASTSwift_VariableDeclaration"></a>ASTSwift::VariableDeclaration(node, ctx)
+### <a name="ASTWalker_VariableDeclaration"></a>ASTWalker::VariableDeclaration(node, ctx)
 `node` Object to use to create a variable declaration
  
 `ctx` Context of the node
@@ -749,7 +751,7 @@ node.declarations.forEach( function(vd) {
 
 ```
 
-### <a name="ASTSwift_VariableDeclarator"></a>ASTSwift::VariableDeclarator(node, ctx)
+### <a name="ASTWalker_VariableDeclarator"></a>ASTWalker::VariableDeclarator(node, ctx)
 
 
 ```javascript
@@ -763,7 +765,7 @@ me.walk( node.init, ctx );
 
 ```
 
-### <a name="ASTSwift_walk"></a>ASTSwift::walk(node, ctx, newLine)
+### <a name="ASTWalker_walk"></a>ASTWalker::walk(node, ctx, newLine)
 `node` The object to walk the AST with
  
 `ctx` The current context
@@ -782,6 +784,8 @@ if(node instanceof Array) {
     
 } else {
     if(node.type) {
+        if(this._wCb) this._wCb(node);
+        
         if(this[node.type]) {
             this[node.type](node, ctx);
         } else {
@@ -792,7 +796,7 @@ if(node instanceof Array) {
 }
 ```
 
-### <a name="ASTSwift_walkAsString"></a>ASTSwift::walkAsString(node, ctx)
+### <a name="ASTWalker_walkAsString"></a>ASTWalker::walkAsString(node, ctx)
 
 
 ```javascript
@@ -814,7 +818,7 @@ try {
 return str;
 ```
 
-### <a name="ASTSwift_WhileStatement"></a>ASTSwift::WhileStatement(node, ctx)
+### <a name="ASTWalker_WhileStatement"></a>ASTWalker::WhileStatement(node, ctx)
 
 
 ```javascript
