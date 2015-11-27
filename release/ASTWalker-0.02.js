@@ -928,9 +928,13 @@
        */
       _myTrait_.SwitchCase = function (node, ctx) {
 
-        this.out("case ");
-        this.walk(node.test, ctx);
-        this.out(" : ", true);
+        if (node.test) {
+          this.out("case ");
+          this.walk(node.test, ctx);
+          this.out(" : ", true);
+        } else {
+          this.out("default: ", true);
+        }
 
         if (node.consequent) {
           var me = this;
