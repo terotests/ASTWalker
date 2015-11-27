@@ -222,7 +222,9 @@
        */
       _myTrait_.CallExpression = function (node, ctx) {
         if (node.callee) {
+          if (node.callee.type == "FunctionExpression") this.out("(");
           this.walk(node.callee, ctx);
+          if (node.callee.type == "FunctionExpression") this.out(")");
           this.out("(");
           if (node.arguments) {
             var me = this,
