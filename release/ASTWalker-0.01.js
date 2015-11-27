@@ -832,7 +832,7 @@
       _myTrait_.SwitchCase = function (node, ctx) {
 
         this.out("case ");
-        this.walk(node.test);
+        this.walk(node.test, ctx);
         this.out(" : ", true);
 
         if (node.consequent) {
