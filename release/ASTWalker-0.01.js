@@ -440,12 +440,12 @@
 
         if (node.init) {
           this.walk(node.init, ctx);
-          this.out("; ");
         }
+        this.out("; ");
         if (node.test) {
           this.walk(node.test, ctx);
-          this.out("; ");
         }
+        this.out("; ");
         if (node.update) {
           this.walk(node.update, ctx);
         }
