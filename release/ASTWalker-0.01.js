@@ -161,6 +161,23 @@
        * @param Object node
        * @param Object ctx
        */
+      _myTrait_.CatchClause = function (node, ctx) {
+        this.out(" catch ");
+
+        if (node.param) {
+          this.out("(");
+          this.walk(node.param, ctx);
+          this.out(")");
+        }
+        if (node.body) {
+          this.walk(node.body, ctx);
+        }
+      };
+
+      /**
+       * @param Object node
+       * @param Object ctx
+       */
       _myTrait_.DoWhileStatement = function (node, ctx) {
         this.out("do {", true);
 
@@ -591,6 +608,33 @@
        */
       _myTrait_.ThisExpression = function (node) {
         this.out("this");
+      };
+
+      /**
+       * @param Object node
+       * @param float ctx
+       */
+      _myTrait_.TryStatement = function (node, ctx) {
+
+        this.out("try ");
+        this.walk(node.block, ctx);
+
+        if (node.handler) {
+          this.walk(node.handler, ctx);
+        }
+        if (node.finalizer) {
+          this.out(" finally ");
+          this.walk(node.finalizer, ctx);
+        }
+        /*
+        interface TryStatement <: Statement {
+        type: "TryStatement";
+        block: BlockStatement;
+        handler: CatchClause | null;
+        guardedHandlers: [ CatchClause ];
+        finalizer: BlockStatement | null;
+        }
+        */
       };
 
       /**
