@@ -710,7 +710,7 @@
         }
 
         if (newline) {
-          this._codeStr += this._currentLine + ";\n";
+          this._codeStr += this._currentLine + "\n";
           this._currentLine = "";
         }
       };
@@ -851,7 +851,7 @@
 
         this.out("switch(");
 
-        this.walk(node.discriminant);
+        this.walk(node.discriminant, ctx);
         this.out(")");
         this.out("{", true);
 
