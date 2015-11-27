@@ -1086,8 +1086,11 @@
       _myTrait_.VariableDeclarator = function (node, ctx) {
         var me = this;
 
-        me.out(node.id.name + " = ");
-        me.walk(node.init, ctx);
+        me.out(node.id.name);
+        if (node.init) {
+          this.out(" = ");
+          me.walk(node.init, ctx);
+        }
       };
 
       /**
