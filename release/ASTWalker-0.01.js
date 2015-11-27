@@ -695,11 +695,13 @@
           me.out("{");
           var cnt = 0;
           if (node && node.properties) {
+            me.indent(1);
             node.properties.forEach(function (p) {
-              if (cnt++ > 0) me.out(",");
+              if (cnt++ > 0) me.out(",", true);
               me.trigger("ObjectExpressionProperty", p);
               me.walk(p, ctx);
             });
+            me.indent(-1);
           }
           me.out("}");
         } catch (e) {
