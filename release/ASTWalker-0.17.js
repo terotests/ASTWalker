@@ -780,6 +780,9 @@
         var bNeedPar = true;
         if (node.object.type == "Identifier" || node.object.type == "Literal" || node.object.type == "ThisExpression") {
           bNeedPar = false;
+          if (typeof node.object.value === "number") {
+            bNeedPar = true;
+          }
         }
         if (bNeedPar) this.out("(");
         this.walk(node.object, ctx);
