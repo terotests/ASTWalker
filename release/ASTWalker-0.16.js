@@ -223,7 +223,9 @@
        */
       _myTrait_.BreakStatement = function (node, ctx) {
         this.nlIfNot();
-        this.out("break", true);
+        this.out("break ");
+        if (node.label) this.walk(node.label, ctx);
+        this.out("", true);
       };
 
       /**
@@ -340,7 +342,9 @@
        */
       _myTrait_.ContinueStatement = function (node, ctx) {
         this.nlIfNot();
-        this.out("continue", true);
+        this.out("continue ");
+        if (node.label) this.walk(node.label, ctx);
+        this.out("", true);
       };
 
       /**
