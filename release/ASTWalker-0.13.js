@@ -426,7 +426,13 @@
 
         if (node.body) {
           this.trigger("ForInBody", node.body);
+          var bNeedsPar = false;
+          if (node.body.type != "BlockStatement" && node.body.type.indexOf("Statement") >= 0) {
+            bNeedsPar = true;
+          }
+          if (bNeedsPar) this.out("{");
           this.walk(node.body, ctx);
+          if (bNeedsPar) this.out("}");
         }
 
         this.out("", true);
