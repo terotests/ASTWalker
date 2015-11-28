@@ -900,7 +900,7 @@
           me.out("{");
           var cnt = 0;
           if (node && node.properties) {
-            if (node.properties.length > 1) me.out("", true);
+            //if(node.properties.length>1) me.out("", true);
             node.properties.forEach(function (p) {
               if (cnt++ > 0) me.out(",");
               me.trigger("ObjectExpressionProperty", p);
@@ -981,9 +981,11 @@
 
         this.trigger("ObjectPropertyKey", node.key);
         this.walk(node.key, ctx);
-        this.out(":");
-        this.trigger("ObjectPropertyValue", node.value);
-        this.walk(node.value, ctx);
+        if (!node.shorthand) {
+          this.out(":");
+          this.trigger("ObjectPropertyValue", node.value);
+          this.walk(node.value, ctx);
+        }
       };
 
       /**
