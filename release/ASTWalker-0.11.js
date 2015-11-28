@@ -700,9 +700,14 @@
        */
       _myTrait_.MemberExpression = function (node, ctx) {
         this.trigger("MemberExpressionObject", node.object);
-        if (node.object.type == "FunctionExpression") this.out("(");
+        // MemberExpression
+        var bNeedPar = true;
+        if (node.object.type == "Identifier" || node.object.type == "Literal") {
+          bNeedPar = false;
+        }
+        if (bNeedPar) this.out("(");
         this.walk(node.object, ctx);
-        if (node.object.type == "FunctionExpression") this.out(")");
+        if (bNeedPar) this.out(")");
 
         if (node.computed) {
           this.out("[");
