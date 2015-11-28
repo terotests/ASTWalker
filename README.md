@@ -283,7 +283,9 @@ this.out("}");
 
 ```javascript
 this.nlIfNot();
-this.out("break", true);
+this.out("break ");
+if(node.label) this.walk(node.label, ctx);
+this.out("", true);
 ```
 
 ### <a name="ASTWalker_breakWalk"></a>ASTWalker::breakWalk(t)
@@ -397,7 +399,9 @@ interface ConditionalExpression <: Expression {
 
 ```javascript
 this.nlIfNot();
-this.out("continue", true);
+this.out("continue ");
+if(node.label) this.walk(node.label, ctx);
+this.out("", true);
 ```
 
 ### <a name="ASTWalker_DebuggerStatement"></a>ASTWalker::DebuggerStatement(node, ctx)
@@ -704,7 +708,7 @@ this.walk(node.test, ctx);
 this.out(")");
 if(node.consequent) {
     var bNeedsPar = false;
-    if(node.consequent.type != "BlockStatement" && node.consequent.type.indexOf("Statement") >=0) bNeedsPar=true;
+    if(node.consequent.type != "BlockStatement" ) bNeedsPar=true;
     this.trigger("IfConsequent", node.consequent);
 
     if(bNeedsPar) {
@@ -720,7 +724,7 @@ if(node.consequent) {
 if(node.alternate) {
     this.out(" else ");
     var bNeedsPar = false;
-    if(node.alternate.type != "BlockStatement" && node.alternate.type.indexOf("Statement") >=0) bNeedsPar=true; 
+    if(node.alternate.type != "BlockStatement" ) bNeedsPar=true; 
 
     this.trigger("IfAlternate", node.alternate);
 
@@ -825,6 +829,9 @@ this.trigger("MemberExpressionObject", node.object);
 var bNeedPar = true;
 if(node.object.type == "Identifier" || node.object.type == "Literal" || node.object.type == "ThisExpression") {
     bNeedPar = false;
+    if(typeof node.object.value === "number") {
+        bNeedPar = true;
+    }     
 }
 if(bNeedPar) this.out("(");
 this.walk(node.object,ctx);
