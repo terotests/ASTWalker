@@ -546,6 +546,8 @@
 
         this.out("function");
 
+        if (node.generator) this.out("*");
+
         if (node.id && node.id.name) {
           this.trigger("FunctionName", node);
           this.out(" " + node.id.name + " ");
