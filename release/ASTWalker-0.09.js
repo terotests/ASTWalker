@@ -348,6 +348,7 @@
        * @param Object ctx
        */
       _myTrait_.DebuggerStatement = function (node, ctx) {
+        this.nlIfNot();
         this.out("debugger;");
       };
 
@@ -356,6 +357,7 @@
        * @param Object ctx
        */
       _myTrait_.DoWhileStatement = function (node, ctx) {
+        this.nlIfNot();
         this.out("do {", true);
 
         if (node.body) {
@@ -405,6 +407,7 @@
        * @param Object ctx
        */
       _myTrait_.ForInStatement = function (node, ctx) {
+        this.nlIfNot();
         this.out("for(");
 
         if (node.left) {
@@ -431,6 +434,7 @@
        * @param Object ctx
        */
       _myTrait_.ForOfStatement = function (node, ctx) {
+        this.nlIfNot();
         this.out("for(");
 
         if (node.left) {
@@ -637,7 +641,7 @@
        * @param Object ctx
        */
       _myTrait_.LabeledStatement = function (node, ctx) {
-
+        this.nlIfNot();
         this.walk(node.label, ctx);
         this.out(":", true);
         this.indent(1);
@@ -885,7 +889,7 @@
        * @param float ctx
        */
       _myTrait_.ReturnStatement = function (node, ctx) {
-
+        this.nlIfNot();
         this.out("return ");
         this.trigger("ReturnValue", node.argument);
         this.walk(node.argument, ctx);
@@ -984,7 +988,7 @@
        * @param float ctx
        */
       _myTrait_.SwitchStatement = function (node, ctx) {
-
+        this.nlIfNot();
         this.out("switch(");
 
         this.walk(node.discriminant, ctx);
@@ -1020,6 +1024,7 @@
        * @param Object ctx
        */
       _myTrait_.ThrowStatement = function (node, ctx) {
+        this.nlIfNot();
         this.out("throw ");
         this.trigger("ThrowArgument", node.argument);
         this.walk(node.argument, ctx);
@@ -1184,6 +1189,7 @@
        * @param Object ctx
        */
       _myTrait_.WhileStatement = function (node, ctx) {
+        this.nlIfNot();
         this.out("while ");
 
         if (node.test) {
