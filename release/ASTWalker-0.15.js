@@ -365,9 +365,15 @@
           if (node.body.type != "BlockStatement" && node.body.type.indexOf("Statement") >= 0) {
             bNeedsPar = true;
           }
-          if (bNeedsPar) this.out("{");
+          if (bNeedsPar) {
+            this.out("{");
+            this.indent(1);
+          }
           this.walk(node.body, ctx);
-          if (bNeedsPar) this.out("}");
+          if (bNeedsPar) {
+            this.indent(-1);
+            this.out("}");
+          }
         }
 
         this.out(" ");
@@ -436,9 +442,15 @@
           if (node.body.type != "BlockStatement" && node.body.type.indexOf("Statement") >= 0) {
             bNeedsPar = true;
           }
-          if (bNeedsPar) this.out("{");
+          if (bNeedsPar) {
+            this.out("{");
+            this.indent(1);
+          }
           this.walk(node.body, ctx);
-          if (bNeedsPar) this.out("}");
+          if (bNeedsPar) {
+            this.indent(-1);
+            this.out("}");
+          }
         }
 
         this.out("", true);
@@ -469,9 +481,15 @@
           if (node.body.type != "BlockStatement" && node.body.type.indexOf("Statement") >= 0) {
             bNeedsPar = true;
           }
-          if (bNeedsPar) this.out("{");
+          if (bNeedsPar) {
+            this.out("{");
+            this.indent(1);
+          }
           this.walk(node.body, ctx);
-          if (bNeedsPar) this.out("}");
+          if (bNeedsPar) {
+            this.indent(-1);
+            this.out("}");
+          }
         }
 
         this.out("", true);
@@ -502,9 +520,15 @@
           if (node.body.type != "BlockStatement" && node.body.type.indexOf("Statement") >= 0) {
             bNeedsPar = true;
           }
-          if (bNeedsPar) this.out("{");
+          if (bNeedsPar) {
+            this.out("{");
+            this.indent(1);
+          }
           this.walk(node.body, ctx);
-          if (bNeedsPar) this.out("}");
+          if (bNeedsPar) {
+            this.indent(-1);
+            this.out("}");
+          }
         }
 
         this.out("", true);
@@ -631,18 +655,33 @@
           var bNeedsPar = false;
           if (node.consequent.type != "BlockStatement" && node.consequent.type.indexOf("Statement") >= 0) bNeedsPar = true;
           this.trigger("IfConsequent", node.consequent);
-          if (bNeedsPar) this.out("{");
+
+          if (bNeedsPar) {
+            this.out("{");
+            this.indent(1);
+          }
           this.walk(node.consequent, ctx);
-          if (bNeedsPar) this.out("}");
+          if (bNeedsPar) {
+            this.indent(-1);
+            this.out("}");
+          }
         }
         if (node.alternate) {
           this.out(" else ");
           var bNeedsPar = false;
           if (node.alternate.type != "BlockStatement" && node.alternate.type.indexOf("Statement") >= 0) bNeedsPar = true;
-          if (bNeedsPar) this.out("{");
+
           this.trigger("IfAlternate", node.alternate);
+
+          if (bNeedsPar) {
+            this.out("{");
+            this.indent(1);
+          }
           this.walk(node.alternate, ctx);
-          if (bNeedsPar) this.out("}");
+          if (bNeedsPar) {
+            this.indent(-1);
+            this.out("}");
+          }
         }
 
         this.out("", true);
@@ -1270,9 +1309,15 @@
           if (node.body.type != "BlockStatement" && node.body.type.indexOf("Statement") >= 0) {
             bNeedsPar = true;
           }
-          if (bNeedsPar) this.out("{");
+          if (bNeedsPar) {
+            this.out("{");
+            this.indent(1);
+          }
           this.walk(node.body, ctx);
-          if (bNeedsPar) this.out("}");
+          if (bNeedsPar) {
+            this.indent(-1);
+            this.out("}");
+          }
         }
 
         this.out("", true);
