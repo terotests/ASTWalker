@@ -1229,6 +1229,7 @@
         if (node.kind == "const") me.out("const ");
         var indent = 0;
         node.declarations.forEach(function (vd) {
+          if (vd.deleted) return;
           if (cnt++ > 0) {
             if (cnt == 2) {
               indent += 2;
@@ -1239,6 +1240,8 @@
           me.walk(vd, ctx);
         });
         this.indent(-1 * indent);
+
+        if (cnt == 0) this._undoOutput = true;
       };
 
       /**
@@ -1280,6 +1283,9 @@
             if (newLine) me.nlIfNot(); // insert newline just in case to the end...
           });
         } else {
+
+          if (node.deleted) return;
+
           if (node.type) {
             var runTime = {
               node: node,
@@ -1297,7 +1303,15 @@
 
             if (this[node.type]) {
               this._path.push(node);
+
+              var oldLine = this._currentLine;
+              var oldPos = this._codeStr.length;
               this[node.type](node, ctx);
+              if (this._undoOutput) {
+                this._codeStr = this._codeStr.substring(0, oldPos);
+                this._currentLine = oldLine;
+                this._undoOutput = false;
+              }
               this._path.pop();
             } else {
               console.log("Did not find " + node.type);
