@@ -399,6 +399,7 @@
        * @param float ctx
        */
       _myTrait_.ExpressionStatement = function (node, ctx) {
+        this.nlIfNot();
         this.walk(node.expression, ctx);
       };
 
