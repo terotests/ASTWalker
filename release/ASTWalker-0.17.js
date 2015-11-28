@@ -656,8 +656,8 @@
         this.walk(node.test, ctx);
         this.out(")");
         if (node.consequent) {
-          var bNeedsPar = true;
-          if (node.consequent.type != "BlockStatement" && node.consequent.type.indexOf("Statement") >= 0) bNeedsPar = true;
+          var bNeedsPar = false;
+          if (node.consequent.type != "BlockStatement") bNeedsPar = true;
           this.trigger("IfConsequent", node.consequent);
 
           if (bNeedsPar) {
@@ -672,8 +672,8 @@
         }
         if (node.alternate) {
           this.out(" else ");
-          var bNeedsPar = true;
-          if (node.alternate.type != "BlockStatement" && node.alternate.type.indexOf("Statement") >= 0) bNeedsPar = true;
+          var bNeedsPar = false;
+          if (node.alternate.type != "BlockStatement") bNeedsPar = true;
 
           this.trigger("IfAlternate", node.alternate);
 
