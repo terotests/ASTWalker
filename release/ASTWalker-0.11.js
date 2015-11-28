@@ -358,16 +358,17 @@
        */
       _myTrait_.DoWhileStatement = function (node, ctx) {
         this.nlIfNot();
-        this.out("do {", true);
+        this.out("do ", true);
 
         if (node.body) {
           this.walk(node.body, ctx);
         }
 
-        this.out(" } ");
+        this.out(" ");
         if (node.test) {
           this.out("while(");
           this.trigger("DoWhileTest", node.test);
+          this.walk(node.test, ctx);
           this.out(")");
         }
 
