@@ -772,7 +772,7 @@
        * @param float t
        */
       _myTrait_.nlIfNot = function (t) {
-        if (this._currentLine.length > 0) this.out("", true);
+        if (this._currentLine.length > 0) this.out(";", true);
       };
 
       /**
