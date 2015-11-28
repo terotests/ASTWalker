@@ -1076,8 +1076,14 @@
        * @param float ctx
        */
       _myTrait_.UnaryExpression = function (node, ctx) {
+        var bNeedsPar = true;
+        if (node.argument.type == "Identifier" || node.argument.type == "Literal") {
+          bNeedsPar = false;
+        }
         this.out(node.operator);
+        if (bNeedsPar) this.out("(");
         this.trigger("UnaryExpressionArgument", node.argument);
+        if (bNeedsPar) this.out(")");
         this.walk(node.argument, ctx);
       };
 
