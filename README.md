@@ -481,7 +481,13 @@ this.out(")");
 
 if(node.body) {
     this.trigger("ForInBody", node.body);
+    var bNeedsPar = false;
+    if(node.body.type != "BlockStatement" && ( node.body.type.indexOf("Statement")>=0) ) {
+        bNeedsPar = true;
+    }
+    if(bNeedsPar) this.out("{");
     this.walk(node.body,ctx);
+    if(bNeedsPar) this.out("}");
 }
 
 this.out("", true);
@@ -655,13 +661,21 @@ this.trigger("IfTest", node.test);
 this.walk(node.test, ctx);
 this.out(")");
 if(node.consequent) {
+    var bNeedsPar = false;
+    if(node.consequent.type != "BlockStatement" && node.consequent.type.indexOf("Statement") >=0) bNeedsPar=true;
     this.trigger("IfConsequent", node.consequent);
+    if(bNeedsPar) this.out("{");
     this.walk(node.consequent,ctx);
+    if(bNeedsPar) this.out("}");
 }
 if(node.alternate) {
     this.out(" else ");
+    var bNeedsPar = false;
+    if(node.alternate.type != "BlockStatement" && node.alternate.type.indexOf("Statement") >=0) bNeedsPar=true; 
+    if(bNeedsPar) this.out("{");
     this.trigger("IfAlternate", node.alternate);
     this.walk(node.alternate,ctx);
+    if(bNeedsPar) this.out("}");
 }
 
 this.out("", true);
@@ -821,7 +835,15 @@ if(node.callee) {
 
 
 ```javascript
-if(this._currentLine.length > 0) this.out(";", true);
+var len = this._currentLine.length; 
+if(len > 0) {
+    // {
+    if(this._currentLine[len-1] =="{") {
+        this.out("", true);
+    } else {
+        this.out(";", true);
+    }
+}
 ```
 
 ### <a name="ASTWalker_ObjectExpression"></a>ASTWalker::ObjectExpression(node, ctx)
