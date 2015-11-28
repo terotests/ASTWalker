@@ -1267,12 +1267,14 @@
         // What is going on here then...
         if (node instanceof Array) {
           var me = this;
+          this.trigger("nodeArray", node);
           node.forEach(function (n) {
             me.walk(n, ctx);
             if (newLine) me.nlIfNot(); // insert newline just in case to the end...
           });
         } else {
           if (node.type) {
+            this.trigger("node", node);
             this.trigger(node.type, node);
 
             if (this._skipWalk) {
