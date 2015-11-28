@@ -1224,7 +1224,6 @@
             me.out(",", true); // always a new declaration
           }
           me.walk(vd, ctx);
-          cnt++;
         });
         this.indent(-1 * indent);
       };
