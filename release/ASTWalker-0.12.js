@@ -703,7 +703,7 @@
         this.trigger("MemberExpressionObject", node.object);
         // MemberExpression
         var bNeedPar = true;
-        if (node.object.type == "Identifier" || node.object.type == "Literal") {
+        if (node.object.type == "Identifier" || node.object.type == "Literal" || node.object.type == "ThisExpression") {
           bNeedPar = false;
         }
         if (bNeedPar) this.out("(");
