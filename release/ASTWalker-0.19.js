@@ -1187,6 +1187,8 @@
           bNeedsPar = false;
         }
         this.out(node.operator);
+        if (node.operator != "!") this.out(" ");
+
         if (bNeedsPar) this.out("(");
         this.trigger("UnaryExpressionArgument", node.argument);
         this.walk(node.argument, ctx);

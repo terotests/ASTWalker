@@ -74,6 +74,7 @@
 - [ObjectExpression](README.md#ASTWalker_ObjectExpression)
 - [ObjectPattern](README.md#ASTWalker_ObjectPattern)
 - [out](README.md#ASTWalker_out)
+- [prevChar](README.md#ASTWalker_prevChar)
 - [Program](README.md#ASTWalker_Program)
 - [Property](README.md#ASTWalker_Property)
 - [pushStructure](README.md#ASTWalker_pushStructure)
@@ -735,6 +736,7 @@ if(node.alternate) {
     this.walk(node.alternate,ctx);
     if(bNeedsPar) {
         this.indent(-1);
+        if(this.prevChar() != "{") this.out("",true);
         this.out("}");
     }     
 }
@@ -1000,6 +1002,18 @@ if(newline) {
 }
 ```
 
+### <a name="ASTWalker_prevChar"></a>ASTWalker::prevChar(t)
+
+
+```javascript
+var len = this._currentLine.length; 
+if(len > 0) {
+    return this._currentLine[len-1];
+} else {
+    return "\n";
+}
+```
+
 ### <a name="ASTWalker_Program"></a>ASTWalker::Program(node, ctx)
 
 
@@ -1220,6 +1234,8 @@ if(node.argument.type == "Identifier" || node.argument.type == "Literal") {
     bNeedsPar = false;
 }
 this.out(node.operator);
+if(node.operator!="!") this.out(" ");
+
 if(bNeedsPar) this.out("(");
 this.trigger("UnaryExpressionArgument", node.argument);
 this.walk(node.argument,ctx);
@@ -1260,7 +1276,6 @@ node.declarations.forEach( function(vd) {
         me.out(",", true); // always a new declaration
     }
     me.walk(vd,ctx);
-    cnt++;
 });
 this.indent(-1*indent);
 
