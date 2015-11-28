@@ -662,12 +662,25 @@
        * @param Object ctx
        */
       _myTrait_.LogicalExpression = function (node, ctx) {
+        var bLeftNeedsPar = true,
+            bRightNeedsPar = true;
+        if (node.left.type == "Identifier" || node.left.type == "Literal") {
+          bLeftNeedsPar = false;
+        }
+        if (node.right.type == "Identifier" || node.right.type == "Literal") {
+          bRightNeedsPar = false;
+        }
 
-        if (node.left) this.walk(node.left, ctx);
+        if (bLeftNeedsPar) this.out("(");
+        this.walk(node.left, ctx);
+        if (bLeftNeedsPar) this.out(")");
+
         if (node.operator) {
           this.out(" " + node.operator + " ");
         }
-        if (node.right) this.walk(node.right, ctx);
+        if (bRightNeedsPar) this.out("(");
+        this.walk(node.right, ctx);
+        if (bRightNeedsPar) this.out(")");
 
         /*
         interface LogicalExpression <: Expression {
