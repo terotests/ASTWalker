@@ -684,6 +684,7 @@
           this.walk(node.alternate, ctx);
           if (bNeedsPar) {
             this.indent(-1);
+            if (this.prevChar() != "{") this.out("", true);
             this.out("}");
           }
         }
@@ -944,6 +945,18 @@
         if (newline) {
           this._codeStr += this._currentLine + "\n";
           this._currentLine = "";
+        }
+      };
+
+      /**
+       * @param float t
+       */
+      _myTrait_.prevChar = function (t) {
+        var len = this._currentLine.length;
+        if (len > 0) {
+          return this._currentLine[len - 1];
+        } else {
+          return "\n";
         }
       };
 
