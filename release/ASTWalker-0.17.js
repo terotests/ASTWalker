@@ -210,7 +210,7 @@
       _myTrait_.BlockStatement = function (node, ctx) {
 
         // keeps at the same context right now I guess....
-        this.out("{", true);
+        this.out(" {", true);
         this.indent(1);
         this.walk(node.body, ctx, true);
         this.indent(-1);
