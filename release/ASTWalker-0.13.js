@@ -610,13 +610,21 @@
         this.walk(node.test, ctx);
         this.out(")");
         if (node.consequent) {
+          var bNeedsPar = false;
+          if (node.consequent.type != "BlockStatement" && node.consequent.type.indexOf("Statement") >= 0) bNeedsPar = true;
           this.trigger("IfConsequent", node.consequent);
+          if (bNeedsPar) this.out("{");
           this.walk(node.consequent, ctx);
+          if (bNeedsPar) this.out("}");
         }
         if (node.alternate) {
           this.out(" else ");
+          var bNeedsPar = false;
+          if (node.alternate.type != "BlockStatement" && node.alternate.type.indexOf("Statement") >= 0) bNeedsPar = true;
+          if (bNeedsPar) this.out("{");
           this.trigger("IfAlternate", node.alternate);
           this.walk(node.alternate, ctx);
+          if (bNeedsPar) this.out("}");
         }
 
         this.out("", true);
