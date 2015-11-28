@@ -599,6 +599,8 @@ this.out("", true);
 
 this.out("function");
 
+if(node.generator) this.out("*");
+
 if(node.id && node.id.name) {
     this.trigger("FunctionName", node);
     this.out(" "+node.id.name+" "); 
@@ -948,7 +950,7 @@ try {
     me.out("{");
     var cnt=0;
     if(node && node.properties) {
-        if(node.properties.length>1) me.out("", true);
+        //if(node.properties.length>1) me.out("", true);
         node.properties.forEach( function(p) {
             if(cnt++>0) me.out(",");
             me.trigger("ObjectExpressionProperty", p);
@@ -1031,9 +1033,11 @@ this.walk(node.body,ctx, true);
 
 this.trigger("ObjectPropertyKey", node.key);
 this.walk(node.key, ctx);
-this.out(":");
-this.trigger("ObjectPropertyValue", node.value);
-this.walk(node.value, ctx);
+if(!node.shorthand) {
+    this.out(":");
+    this.trigger("ObjectPropertyValue", node.value);
+    this.walk(node.value, ctx);
+}
 ```
 
 ### <a name="ASTWalker_pushStructure"></a>ASTWalker::pushStructure(def)
@@ -1266,6 +1270,7 @@ var me = this;
 var cnt=0;
 if(node.kind=="var")  me.out("var ");
 if(node.kind=="let") me.out("let ");   
+if(node.kind=="const") me.out("const ");   
 var indent=0;
 node.declarations.forEach( function(vd) {
     if(cnt++>0) {
@@ -1288,7 +1293,8 @@ this.indent(-1*indent);
 ```javascript
 var me = this;
 
-me.out(node.id.name);
+if(node.id) me.walk(node.id, ctx);
+
 if(node.init) {
     this.out(" = ");
     me.walk( node.init, ctx );
@@ -1316,6 +1322,7 @@ if(!ctx) {
 // What is going on here then...
 if(node instanceof Array) {
     var me = this;
+    this.trigger("nodeArray", node);
     node.forEach( function(n) {
         me.walk( n, ctx );
         if(newLine) me.nlIfNot(); // insert newline just in case to the end...
@@ -1323,7 +1330,12 @@ if(node instanceof Array) {
     
 } else {
     if(node.type) {
-        this.trigger(node.type, node);
+        var runTime = {
+            node : node,
+            ctx : ctx
+        };
+        this.trigger("node", runTime);
+        this.trigger(node.type, runTime);
         
         if(this._skipWalk) {
             this._skipWalk = false;
