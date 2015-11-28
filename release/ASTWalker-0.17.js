@@ -1204,9 +1204,9 @@
         var indent = 0;
         node.declarations.forEach(function (vd) {
           if (cnt++ > 0) {
-            if (cnt == 1) {
-              indent++;
-              me.indent(1);
+            if (cnt == 2) {
+              indent += 2;
+              me.indent(indent);
             }
             me.out(",", true); // always a new declaration
           }

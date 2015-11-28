@@ -271,7 +271,7 @@ if(bRightNeedsPar) this.out(")");
 ```javascript
 
 // keeps at the same context right now I guess....
-this.out("{",true);
+this.out(" {",true);
 this.indent(1);
 this.walk(node.body,ctx, true);
 this.indent(-1);
@@ -1253,9 +1253,9 @@ if(node.kind=="let") me.out("let ");
 var indent=0;
 node.declarations.forEach( function(vd) {
     if(cnt++>0) {
-        if(cnt==1) {
-            indent++;
-            me.indent(1);
+        if(cnt==2) {
+            indent+=2;
+            me.indent(indent);
         }
         me.out(",", true); // always a new declaration
     }
