@@ -1220,6 +1220,7 @@
         var cnt = 0;
         if (node.kind == "var") me.out("var ");
         if (node.kind == "let") me.out("let ");
+        if (node.kind == "const") me.out("const ");
         var indent = 0;
         node.declarations.forEach(function (vd) {
           if (cnt++ > 0) {
