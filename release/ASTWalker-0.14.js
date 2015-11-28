@@ -789,7 +789,7 @@
         var len = this._currentLine.length;
         if (len > 0) {
           // {
-          if (this._currentLine[len - 1] == "{") {
+          if (this._currentLine[len - 1] == "{" || this._currentLine[len - 1] == ";") {
             this.out("", true);
           } else {
             this.out(";", true);
