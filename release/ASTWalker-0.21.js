@@ -918,6 +918,9 @@
        * @param Boolean newline  - if ends with newline
        */
       _myTrait_.out = function (str, newline) {
+
+        if (this._options.noOutput) return;
+
         if (this._collecting) {
           if (str) {
             if (this._collectLine.length == 0) {
