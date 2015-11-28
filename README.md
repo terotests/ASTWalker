@@ -244,9 +244,25 @@ this.walk(node.right, ctx);
 
 ```javascript
 
+// var logicals = ["==", "<=", ">=", "==", "===", "!=", ]
+
+var bLeftNeedsPar = true, bRightNeedsPar=true;
+if(node.left.type == "Identifier" || node.left.type == "Literal") {
+    bLeftNeedsPar = false;
+}
+if(node.right.type == "Identifier" || node.right.type == "Literal") {
+    bRightNeedsPar = false;
+}
+
+if(bLeftNeedsPar) this.out("(");
 this.walk(node.left, ctx);
+if(bLeftNeedsPar) this.out(")");
+
 this.out(" "+node.operator+" ");
+
+if(bRightNeedsPar) this.out("(");
 this.walk(node.right, ctx);
+if(bRightNeedsPar) this.out(")");
 ```
 
 ### <a name="ASTWalker_BlockStatement"></a>ASTWalker::BlockStatement(node, ctx)
@@ -266,6 +282,7 @@ this.out("}");
 
 
 ```javascript
+this.nlIfNot();
 this.out("break", true);
 ```
 
@@ -379,6 +396,7 @@ interface ConditionalExpression <: Expression {
 
 
 ```javascript
+this.nlIfNot();
 this.out("continue", true);
 ```
 
@@ -386,6 +404,7 @@ this.out("continue", true);
 
 
 ```javascript
+this.nlIfNot();
 this.out("debugger;");
 ```
 
@@ -393,16 +412,18 @@ this.out("debugger;");
 
 
 ```javascript
-this.out("do {",true);
+this.nlIfNot();
+this.out("do ",true);
 
 if(node.body) {
     this.walk(node.body,ctx);
 }
 
-this.out(" } ");
+this.out(" ");
 if(node.test) {
     this.out("while(");
     this.trigger("DoWhileTest", node.test);
+    this.walk(node.test,ctx);
     this.out(")");
 }
 
@@ -435,14 +456,16 @@ this._collecting = false;
 
 
 ```javascript
+this.nlIfNot();
 this.walk(node.expression, ctx);
-
+this.out(";", true);
 ```
 
 ### <a name="ASTWalker_ForInStatement"></a>ASTWalker::ForInStatement(node, ctx)
 
 
 ```javascript
+this.nlIfNot();
 this.out("for(");
 
 if(node.left) {
@@ -468,6 +491,7 @@ this.out("", true);
 
 
 ```javascript
+this.nlIfNot();
 this.out("for(");
 
 if(node.left) {
@@ -625,6 +649,7 @@ this.out(node.name);
 
 ```javascript
 
+this.nlIfNot();
 this.out("if(");
 this.trigger("IfTest", node.test);
 this.walk(node.test, ctx);
@@ -671,7 +696,7 @@ this._options = options || {};
 
 
 ```javascript
-
+this.nlIfNot();
 this.walk(node.label, ctx);
 this.out(":", true);
 this.indent(1);
@@ -690,12 +715,25 @@ this.out(node.raw);
 
 
 ```javascript
+var bLeftNeedsPar = true, bRightNeedsPar=true;
+if(node.left.type == "Identifier" || node.left.type == "Literal") {
+    bLeftNeedsPar = false;
+}
+if(node.right.type == "Identifier" || node.right.type == "Literal") {
+    bRightNeedsPar = false;
+}
 
-if(node.left) this.walk(node.left,ctx);
+if(bLeftNeedsPar) this.out("(");
+this.walk(node.left, ctx);
+if(bLeftNeedsPar) this.out(")");
+
 if(node.operator) {
     this.out(" "+node.operator+" ");
 }
-if(node.right) this.walk(node.right,ctx);
+if(bRightNeedsPar) this.out("(");
+this.walk(node.right, ctx);
+if(bRightNeedsPar) this.out(")");
+
 
 /*
 interface LogicalExpression <: Expression {
@@ -712,9 +750,14 @@ interface LogicalExpression <: Expression {
 
 ```javascript
 this.trigger("MemberExpressionObject", node.object);
-if(node.object.type=="FunctionExpression") this.out("(");
+// MemberExpression
+var bNeedPar = true;
+if(node.object.type == "Identifier" || node.object.type == "Literal" || node.object.type == "ThisExpression") {
+    bNeedPar = false;
+}
+if(bNeedPar) this.out("(");
 this.walk(node.object,ctx);
-if(node.object.type=="FunctionExpression") this.out(")");
+if(bNeedPar) this.out(")");
 
 if(node.computed) {
     this.out("[");
@@ -778,7 +821,7 @@ if(node.callee) {
 
 
 ```javascript
-if(this._currentLine.length > 0) this.out("", true);
+if(this._currentLine.length > 0) this.out(";", true);
 ```
 
 ### <a name="ASTWalker_ObjectExpression"></a>ASTWalker::ObjectExpression(node, ctx)
@@ -919,7 +962,7 @@ this.walk(node.argument, ctx);
 
 
 ```javascript
-
+this.nlIfNot();
 this.out("return ");
 this.trigger("ReturnValue", node.argument);
 this.walk(node.argument, ctx);
@@ -994,7 +1037,7 @@ this.out("super");
 
 
 ```javascript
-
+this.nlIfNot();
 if(node.test) {
     this.out("case ");
     this.walk(node.test, ctx);
@@ -1015,7 +1058,7 @@ if(node.consequent) {
 
 
 ```javascript
-
+this.nlIfNot();
 this.out("switch(");
 
 this.walk( node.discriminant, ctx );
@@ -1050,6 +1093,7 @@ this.out("this");
 
 
 ```javascript
+this.nlIfNot();
 this.out("throw ");
 this.trigger("ThrowArgument", node.argument);
 this.walk( node.argument, ctx );
@@ -1085,9 +1129,15 @@ interface TryStatement <: Statement {
 
 
 ```javascript
+var bNeedsPar = true;
+if(node.argument.type == "Identifier" || node.argument.type == "Literal") {
+    bNeedsPar = false;
+}
 this.out(node.operator);
+if(bNeedsPar) this.out("(");
 this.trigger("UnaryExpressionArgument", node.argument);
 this.walk(node.argument,ctx);
+if(bNeedsPar) this.out(")");
 
 ```
 
@@ -1126,8 +1176,8 @@ node.declarations.forEach( function(vd) {
     me.walk(vd,ctx);
     cnt++;
 });
-
 this.indent(-1*indent);
+
 
 ```
 
@@ -1137,8 +1187,11 @@ this.indent(-1*indent);
 ```javascript
 var me = this;
 
-me.out(node.id.name+" = ");
-me.walk( node.init, ctx );
+me.out(node.id.name);
+if(node.init) {
+    this.out(" = ");
+    me.walk( node.init, ctx );
+}
 
 ```
 
@@ -1217,11 +1270,14 @@ return str;
 
 
 ```javascript
+this.nlIfNot();
 this.out("while ");
 
 if(node.test) {
     this.trigger("WhileTest", node.test);
+    this.out("(");
     this.walk(node.test,ctx);
+    this.out(")");
 }
 if(node.body) {
     this.walk(node.body,ctx);
