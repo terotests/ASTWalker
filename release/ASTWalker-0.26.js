@@ -1418,8 +1418,8 @@
               console.log("Did not find " + node.type);
               console.log(node);
             }
-            this.trigger("nodeWalked", node);
-            this.trigger("After" + node.type, node);
+            this.trigger("nodeWalked", runTime);
+            this.trigger("After" + node.type, runTime);
           }
         }
       };
