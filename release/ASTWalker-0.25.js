@@ -604,7 +604,7 @@
           this.trigger("FunctionName", node);
           this.out(" " + node.id.name + " ");
           if (node.id.name) {
-            ctx.functions[node.id.name] == node;
+            ctx.functions[node.id.name] = node;
           }
         } else {
           this.trigger("FunctionAnonymous", node);
@@ -1341,7 +1341,7 @@
         if (node.id) {
           me.walk(node.id, ctx);
           if (node.id.name) {
-            ctx.vars[node.id.name] == node;
+            ctx.vars[node.id.name] = node;
           }
         }
 
