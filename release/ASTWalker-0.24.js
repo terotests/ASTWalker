@@ -651,6 +651,9 @@
         if (node.id && node.id.name) {
           this.trigger("FunctionName", node);
           this.out(" " + node.id.name + " ");
+          if (node.id.name) {
+            ctx.functions[node.id.name] == node;
+          }
         } else {
           this.trigger("FunctionAnonymous", node);
         }
