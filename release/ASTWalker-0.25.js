@@ -693,8 +693,8 @@
       _myTrait_.getParent = function (node) {
 
         if (node) {
-          if (node.id) {
-            var p = this._nodeParents[node.id];
+          if (node.nodeid) {
+            var p = this._nodeParents[node.nodeid];
             return p;
           }
           return;
@@ -1108,9 +1108,9 @@
        */
       _myTrait_.saveNode = function (node) {
 
-        if (!node.id) node.id = this.createId();
+        if (!node.nodeid) node.nodeid = this.createId();
 
-        this.createObject(node.id, node);
+        this.createObject(node.nodeid, node);
       };
 
       /**
@@ -1386,7 +1386,7 @@
             var parentNode = this.getParent();
             if (!this._nodeParents) this._nodeParents = {};
             if (parentNode) {
-              this._nodeParents[node.id] = parentNode;
+              this._nodeParents[node.nodeid] = parentNode;
             }
             var runTime = {
               node: node,
