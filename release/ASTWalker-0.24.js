@@ -360,6 +360,7 @@
         var ctx = {
           id: id,
           vars: {},
+          functions: {},
           parentCtx: parent
         };
         this._objects[id] = ctx;
@@ -602,6 +603,9 @@
         if (node.id && node.id.name) {
           this.trigger("FunctionName", node);
           this.out(" " + node.id.name + " ");
+          if (node.id.name) {
+            ctx.functions[node.id.name] == node;
+          }
         } else {
           this.trigger("FunctionAnonymous", node);
         }
@@ -1331,7 +1335,12 @@
       _myTrait_.VariableDeclarator = function (node, ctx) {
         var me = this;
 
-        if (node.id) me.walk(node.id, ctx);
+        if (node.id) {
+          me.walk(node.id, ctx);
+          if (node.id.name) {
+            ctx.vars[node.id.name] == node;
+          }
+        }
 
         if (node.init) {
           this.out(" = ");
