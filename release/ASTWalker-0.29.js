@@ -1384,7 +1384,10 @@
         // What is going on here then...
         if (node instanceof Array) {
           var me = this;
-          this.trigger("nodeArray", node);
+          this.trigger("nodeArray", {
+            node: node,
+            ctx: ctx
+          });
           node.forEach(function (n) {
             me.walk(n, ctx);
             if (newLine) me.nlIfNot(); // insert newline just in case to the end...
