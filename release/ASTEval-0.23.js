@@ -1102,7 +1102,13 @@
           if (node.properties) {
             node.properties.forEach(function (e) {
               var v = e.value.eval_res || me.evalVariable(e.value, ctx);
-              node.eval_res[e.key] = v;
+
+              var keyName = e.key.eval_res;
+              if (typeof keyName == "undefined") {
+                keyName = me.evalVariable(e.key, ctx);
+              }
+
+              node.eval_res[keyName] = v;
             });
           }
         } catch (e) {
@@ -1208,6 +1214,11 @@
           this.out(":");
           this.trigger("ObjectPropertyValue", node.value);
           this.walk(node.value, ctx);
+        }
+
+        var value = this.evalVariable(node.key, ctx);
+        if (typeof value != "undefined") {
+          node.key.eval_res = value;
         }
       };
 
