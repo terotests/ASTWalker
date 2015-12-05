@@ -230,12 +230,23 @@
       };
 
       /**
-       * @param String name
+       * @param String varName
        * @param Object ctx
        * @param Object value
        */
-      _myTrait_.assignTo = function (name, ctx, value) {
-
+      _myTrait_.assignTo = function (varName, ctx, value) {
+        var name;
+        if (typeof varName == "object") {
+          var node = varName;
+          if (node.type == "Identifier") {
+            name = node.name;
+          }
+          if (node.type == "Literal") {
+            name = node.value;
+          }
+        } else {
+          name = varName;
+        }
         // does the context have this variable?
         if (typeof ctx.variables[name] != "undefined") {
           ctx.variables[name] = value;
