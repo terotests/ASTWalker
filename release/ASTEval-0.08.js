@@ -506,6 +506,13 @@
 
         if (ctx.variables[name]) {
           return ctx.variables[name];
+        } else {
+          if (ctx.parentCtx) {
+            return this.evalVariable(name, ctx.parentCtx);
+          } else {
+            // unfortunate constant :/
+            return window[name];
+          }
         }
       };
 
