@@ -219,11 +219,14 @@
         if (bRightNeedsPar) this.out(")");
 
         // evaluate the binary expression
-        if (typeof node.left.eval_res != "undefined" && typeof (node.right.eval_res != "undefined")) {
-          // ?? should result be object with value ?
+        var a = node.left.eval_res,
+            b = node.right.eval_res;
 
-          var a = node.left.eval_res,
-              b = node.right.eval_res;
+        if (typeof a == "undefined") a = this.evalVariable(node.left);
+        if (typeof b == "undefined") b = this.evalVariable(node.right);
+
+        if (typeof a != "undefined" && typeof b != "undefined") {
+          // ?? should result be object with value ?
 
           if (node.operator == "+") node.eval_res = a + b;
           if (node.operator == "-") node.eval_res = a - b;
