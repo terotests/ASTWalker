@@ -946,7 +946,7 @@
         if (node.object.type == "ThisExpression") {
           oo = this.findThis(ctx);
         } else {
-          oo = this.evalVariable(node.object); // <-- Identifier, literal should be ok
+          oo = this.evalVariable(node.object, ctx); // <-- Identifier, literal should be ok
         }
         var prop;
         if (node.computed) {
