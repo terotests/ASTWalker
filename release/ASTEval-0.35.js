@@ -888,6 +888,18 @@
           if (n._exceptionHandler) {
             var node = n._exceptionHandler;
             var newCtx = n._exceptionHandlerCtx;
+            // TODO: handle CatchClause etc.
+            /*
+            this.out(" catch ");
+            if(node.param) {
+            this.out("(");
+            this.walk(node.param, ctx);
+            this.out(")");
+            }
+            if(node.body) {
+            this.walk(node.body, ctx);
+            }        
+            */
             if (node.handler) {
               try {
                 this.walk(node.handler, newCtx);
@@ -1488,6 +1500,10 @@
         this.out("throw ");
         this.trigger("ThrowArgument", node.argument);
         this.walk(node.argument, ctx);
+
+        var value = node.argument.eval_res;
+        if (typeof value == "undefined") value = this.evalVariable(node.argument, ctx);
+        this.handleException(value);
       };
 
       /**
