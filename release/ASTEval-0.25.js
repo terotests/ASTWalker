@@ -185,6 +185,30 @@
 
         if (node.operator == "=") {
           // does have name???
+
+          if (node.left.type == "MemberExpression") {
+
+            var obj, prop;
+            if (typeof node.left.object.eval_res != "undefined") {
+              obj = node.left.object.eval_res;
+            } else {
+              obj = this.evalVariable(node.left.object, ctx);
+            }
+            if (node.left.computed) {
+              if (typeof node.left.property.eval_res != "undefined") {
+                prop = this.evalVariable(node.left.property.eval_res, ctx);
+              } else {
+                prop = this.evalVariable(node.left.property.name, ctx);
+              }
+            } else {
+              prop = node.left.property.name;
+            }
+            if (obj && prop) {
+              obj[prop] = value;
+            }
+            return;
+          }
+
           this.assignTo(node.left.name, ctx, value);
         }
 
@@ -820,6 +844,13 @@
       /**
        * @param float t
        */
+      _myTrait_.getParentProcess = function (t) {
+        return this._parentProcess;
+      };
+
+      /**
+       * @param float t
+       */
       _myTrait_.getStructures = function (t) {
         return this._structures;
       };
@@ -904,6 +935,17 @@
 
         this._options = options || {};
       });
+
+      /**
+       * @param float t
+       */
+      _myTrait_.isPaused = function (t) {
+
+        if (this._isPaused) return true;
+
+        var p = this.getParentProcess();
+        if (p) return p.isPaused();
+      };
 
       /**
        * @param Object node
@@ -1276,6 +1318,27 @@
           });
           this.out(")");
         }
+      };
+
+      /**
+       * @param Object p  - ASTEval
+       */
+      _myTrait_.setParentProcess = function (p) {
+        this._parentProcess = p;
+
+        if (!p._childProcess) {
+          p._childProcess = [];
+        }
+        if (p._childProcess.indexOf(this) < 0) {
+          p._childProcess.push(p);
+        }
+      };
+
+      /**
+       * @param Bool trueOrFalse  - If paused or not
+       */
+      _myTrait_.setPaused = function (trueOrFalse) {
+        this._isPaused = trueOrFalse;
       };
 
       /**
