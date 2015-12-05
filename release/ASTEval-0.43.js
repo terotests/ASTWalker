@@ -1721,32 +1721,20 @@
           var me = this;
           var index = 0;
           var parent = this._path[this._path.length - 1];
-
+          if (!parent && this._breakState) {
+            if (this._breakState.path) {
+              parent = this._breakState.path[this._breakState.path.length - 1];
+            }
+          }
           if (parent && typeof parent._activeIndex != "undefined") {
             index = parent._activeIndex;
           }
+
           // parent of this node...
           for (var i = index; i < node.length; i++) {
             if (parent) parent._activeIndex = i;
             me.walk(node[i], ctx);
             if (this._break) {
-              // Save the state of the machine and exit
-              if (this._breakState) {
-                var stack_array = this._breakState.path;
-                this._path.forEach(function (node) {
-                  stack_array.push(node);
-                });
-                this._breakState.node = node;
-                this._breakState.ctx = ctx;
-                this._breakState.process = this;
-              } else {
-                this._breakState = {
-                  node: node,
-                  ctx: ctx,
-                  process: this,
-                  path: this._path
-                };
-              }
               return;
             }
           }
@@ -1767,12 +1755,22 @@
             // if break command has been issued for the process
             if (this._break) {
               // Save the state of the machine and exit
-              this._breakState = {
-                node: node,
-                ctx: ctx,
-                process: this,
-                path: this._path
-              };
+              if (this._breakState) {
+                var stack_array = this._breakState.path;
+                this._path.forEach(function (node) {
+                  stack_array.push(node);
+                });
+                this._breakState.node = node;
+                this._breakState.ctx = ctx;
+                this._breakState.process = this;
+              } else {
+                this._breakState = {
+                  node: node,
+                  ctx: ctx,
+                  process: this,
+                  path: this._path
+                };
+              }
               return;
             }
 
