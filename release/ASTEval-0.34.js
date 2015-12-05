@@ -68,6 +68,7 @@
 
     (function (_myTrait_) {
       var _cnt;
+      var _eventLoop;
 
       // Initialize static variables here...
 
@@ -872,6 +873,35 @@
       };
 
       /**
+       * @param Object e  - Exception object
+       */
+      _myTrait_.handleException = function (e) {
+
+        // Do something to try to find the exception handler for this...
+
+        // this._exceptionHandler
+
+        // should reverse the exception to some line...
+        for (var i = this._path.length; i >= 0; i--) {
+
+          var n = this._path[i];
+          if (n._exceptionHandler) {
+            var node = n._exceptionHandler;
+            var newCtx = n._exceptionHandlerCtx;
+            if (node.handler) {
+              try {
+                this.walk(node.handler, newCtx);
+              } catch (e) {}
+            }
+            if (node.finalizer) {
+              this.walk(node.finalizer, newCtx);
+            }
+            break;
+          }
+        }
+      };
+
+      /**
        * @param Object node  - Node to walk
        * @param Object ctx  - Context to use
        */
@@ -1467,15 +1497,21 @@
       _myTrait_.TryStatement = function (node, ctx) {
 
         this.out("try ");
+
+        this._exceptionHandler = node;
+        this._exceptionHandlerCtx = ctx;
         this.walk(node.block, ctx);
 
-        if (node.handler) {
-          this.walk(node.handler, ctx);
+        // Walked only in the case of an exception...
+        /*
+        if(node.handler) {
+        this.walk(node.handler, ctx);
         }
-        if (node.finalizer) {
-          this.out(" finally ");
-          this.walk(node.finalizer, ctx);
+        if(node.finalizer) {
+        this.out(" finally ");
+        this.walk(node.finalizer, ctx);
         }
+        */
         /*
         interface TryStatement <: Statement {
         type: "TryStatement";
