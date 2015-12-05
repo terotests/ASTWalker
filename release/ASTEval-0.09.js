@@ -529,6 +529,17 @@
       };
 
       /**
+       * @param Object ctx  - Context to use
+       */
+      _myTrait_.findThis = function (ctx) {
+
+        if (ctx["this"]) return ctx["this"];
+        if (ctx.parentCtx) return this.findThis(ctx.parentCtx);
+
+        return window;
+      };
+
+      /**
        * @param Object node
        * @param Object ctx
        */
@@ -928,6 +939,26 @@
           this.out(".");
           this.trigger("MemberExpressionProperty", node.property);
           this.walk(node.property, ctx);
+        }
+
+        //
+        var oo;
+        if (node.object.type == "ThisExpression") {
+          oo = this.findThis(ctx);
+        } else {
+          oo = this.evalVariable(node.object); // <-- Identifier, literal should be ok
+        }
+        var prop;
+        if (node.computed) {
+          var prop = this.evalVariable(node.property);
+        } else {
+          prop = node.property.name;
+        }
+
+        if (typeof oo != "undefined") {
+          try {
+            node.eval_res = oo[prop];
+          } catch (e) {}
         }
       };
 
