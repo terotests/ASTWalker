@@ -180,6 +180,14 @@
         this.trigger("AssigmentRight", node.right);
         this.walk(node.right, ctx);
 
+        var value = node.right.eval_res;
+        if (typeof value == "undefined") value = this.evalVariable(node.right, ctx);
+
+        if (node.operator == "=") {
+          // does have name???
+          this.assignTo(node.left.name, ctx, value);
+        }
+
         /*
         Assignment	x = y	x = y
         Addition assignment	x += y	x = x + y
@@ -195,6 +203,23 @@
         Bitwise XOR assignment	x ^= y	x = x ^ y
         Bitwise OR assignment	x |= y	x = x | y
         */
+      };
+
+      /**
+       * @param String name
+       * @param Object ctx
+       * @param Object value
+       */
+      _myTrait_.assignTo = function (name, ctx, value) {
+
+        // does the context have this variable?
+        if (typeof ctx.variables[name] != "undefined") {
+          ctx.variables[name] = value;
+        } else {
+          if (ctx.parentCtx) {
+            this.assignTo(name, ctx.parentCtx, value);
+          }
+        }
       };
 
       /**
@@ -525,7 +550,7 @@
         } else {
           name = varName;
         }
-        if (ctx.variables[name]) {
+        if (typeof ctx.variables[name] != "undefined") {
           return ctx.variables[name];
         } else {
           if (ctx.parentCtx) {
