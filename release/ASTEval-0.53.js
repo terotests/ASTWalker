@@ -1452,7 +1452,15 @@
         this.out(";");
 
         // setting the return value
-        ctx.return_value = node.argument.eval_res;
+
+        var fnCtx = ctx;
+        if (fnCtx.block) {
+          while (fnCtx && fnCtx.block) {
+            fnCtx = fnCtx.parentCtx;
+          }
+        }
+
+        fnCtx.return_value = node.argument.eval_res;
       };
 
       /**
