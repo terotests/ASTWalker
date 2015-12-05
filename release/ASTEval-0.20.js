@@ -90,6 +90,12 @@
             me.walk(e, ctx);
           });
           this.out("]");
+
+          node.eval_res = [];
+          node.elements.forEach(function (e) {
+            var v = e.eval_res || me.evalVariable(e, ctx);
+            node.eval_res.push(v);
+          });
         }
       };
 
@@ -1066,6 +1072,14 @@
             me.indent(-1);
           }
           me.out("}");
+
+          node.eval_res = {};
+          if (node.properties) {
+            node.properties.forEach(function (e) {
+              var v = e.value.eval_res || me.evalVariable(e.value, ctx);
+              node.eval_res[p.key] = v;
+            });
+          }
         } catch (e) {
           console.error(e.message);
         }
