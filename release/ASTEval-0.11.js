@@ -950,7 +950,7 @@
         }
         var prop;
         if (node.computed) {
-          var prop = this.evalVariable(node.property, ctx);
+          var prop = this.evalVariable(node.property.name, ctx);
         } else {
           prop = node.property.name;
         }
