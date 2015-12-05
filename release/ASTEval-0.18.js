@@ -222,8 +222,8 @@
         var a = node.left.eval_res,
             b = node.right.eval_res;
 
-        if (typeof a == "undefined") a = this.evalVariable(node.left);
-        if (typeof b == "undefined") b = this.evalVariable(node.right);
+        if (typeof a == "undefined") a = this.evalVariable(node.left, ctx);
+        if (typeof b == "undefined") b = this.evalVariable(node.right, ctx);
 
         if (typeof a != "undefined" && typeof b != "undefined") {
           // ?? should result be object with value ?
