@@ -1727,7 +1727,7 @@
             }
           }
           if (parent && typeof parent._activeIndex != "undefined") {
-            index = parent._activeIndex;
+            index = parent._activeIndex + 1; // if continue, continue from next statement
           }
 
           // parent of this node...
