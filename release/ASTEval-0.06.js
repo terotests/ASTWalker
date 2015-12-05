@@ -644,6 +644,7 @@
        */
       _myTrait_.FunctionDeclaration = function (node, ctx) {
 
+        var me = this;
         node.eval_res = function () {
           // NOTE: if(node.generator) this.out("*");
           //
@@ -666,11 +667,13 @@
           // Going the node body with set values or variables...
           var i = 0;
           node.params.forEach(function (p) {
+
             if (typeof arguments[i] != "undefined") {
-              fnCtx.variables[i] = arguments[i];
+              fnCtx.variables[p.name] = arguments[i];
             } else {
               if (node.defaults && node.defaults[i]) {
-                fnCtx.variables[i] = node.defaults[i].eval_res;
+                me.walk(node.defaults[i], ctx);
+                fnCtx.variables[p.name] = node.defaults[i].eval_res;
               }
             }
             i++;
