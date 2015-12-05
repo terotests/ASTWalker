@@ -1787,6 +1787,7 @@
               if (this._break) return;
 
               this._path.pop();
+
               // if this execution walk is over, but we have a break state available from
               // some previous execution context, continue from that...
               if (this._path.length == 0) {
