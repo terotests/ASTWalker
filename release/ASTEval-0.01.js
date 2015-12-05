@@ -224,7 +224,7 @@
               b = node.right.eval_res;
           if (node.operator == "+") node.eval_res = a + b;
           if (node.operator == "-") node.eval_res = a - b;
-          if (node.operator == "*") node.eval_res = a + b;
+          if (node.operator == "*") node.eval_res = a * b;
           if (node.operator == "/") node.eval_res = a / b;
           if (node.operator == "<") node.eval_res = a < b;
           if (node.operator == "<=") node.eval_res = a <= b;
