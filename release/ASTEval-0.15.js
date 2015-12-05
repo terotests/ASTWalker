@@ -316,6 +316,7 @@
 
           // Parts have been evaluated, then perform the function call..
 
+          var me = this;
           if (typeof node.callee.eval_res != "undefined") {
             var args = [];
             var fnToCall = node.callee.eval_res;
@@ -323,6 +324,8 @@
               node.arguments.forEach(function (n) {
                 if (n.eval_res != "undefined") {
                   args.push(n.eval_res);
+                } else {
+                  args.push(me.evalVariable(n, ctx));
                 }
               });
             }
