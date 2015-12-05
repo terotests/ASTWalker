@@ -1568,6 +1568,8 @@
           if (node.prefix) node.eval_value = node.argument.eval_value;
           node.argument.eval_value = node.argument.eval_value + 1;
           if (!node.prefix) node.eval_value = node.argument.eval_value;
+
+          this.assignTo(node.argument, ctx, node.argument.eval_value);
         }
       };
 
