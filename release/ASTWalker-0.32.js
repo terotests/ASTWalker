@@ -1347,8 +1347,8 @@
         this.trigger("UpdateExpressionArgument", node.argument);
 
         if (node.prefix) {
-          this.walk(node.operator, ctx);
-          this.out(node.argument);
+          this.out(node.operator);
+          this.walk(node.argument, ctx);
         } else {
           this.walk(node.argument, ctx);
           this.out(node.operator);
