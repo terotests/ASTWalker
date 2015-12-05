@@ -1702,12 +1702,12 @@
           var index = 0;
           var parent = this._path[this._path.length - 1];
 
-          if (parent && typeof (parent._activeIndex != "undefined")) {
+          if (parent && typeof parent._activeIndex != "undefined") {
             index = parent._activeIndex;
           }
           // parent of this node...
           for (var i = index; i < node.length; i++) {
-            parent._activeIndex = i;
+            if (parent) parent._activeIndex = i;
             me.walk(node[i], ctx);
             if (this._break) {
               // Save the state of the machine and exit
