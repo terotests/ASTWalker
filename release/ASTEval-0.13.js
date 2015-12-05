@@ -505,7 +505,7 @@
       _myTrait_.evalVariable = function (varName, ctx) {
         var name;
         if (typeof varName == "object") {
-          var node = name;
+          var node = varName;
           if (node.type == "Identifier") {
             name = node.name;
           }
