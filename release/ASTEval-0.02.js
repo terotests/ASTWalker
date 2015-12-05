@@ -313,6 +313,35 @@
             });
           }
           this.out(")");
+
+          // Parts have been evaluated, then perform the function call..
+
+          if (typeof node.callee.eval_res != "undefined") {
+            var args = [];
+            var fnToCall = node.callee.eval_res;
+            if (node.arguments) {
+              node.arguments.forEach(function (n) {
+                if (n.eval_res != "undefined") {
+                  args.push(n.eval_res);
+                }
+              });
+            }
+            // Todo : define calls to 'this'
+
+            var this_pointer = ctx["this"]; // <- or global this perhaps
+            if (node.callee.type == "MemberExpression") {
+              this_pointer = node.callee.object.eval_res;
+              return;
+            }
+            if (node.callee.type == "ThisExpression") {
+              if (ctx.parentCtx) this_pointer = ctx.parentCtx["this"];
+              return;
+            }
+
+            if (typeof fnToCall == "function") {
+              node.eval_res = fnToCall.apply(this_pointer, args);
+            }
+          }
         }
       };
 
