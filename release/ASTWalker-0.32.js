@@ -1258,25 +1258,17 @@
        * @param float ctx
        */
       _myTrait_.TemplateLiteral = function (node, ctx) {
-        //this.out("${");
-        //this.out(node., ctx);
-        //this.out("}");
-
-        this.walk(node.expressions);
-
-        var strOut = "";
+        this.out("`");
         for (var i = 0; i < node.quasis.length; i++) {
           if (i > 0) {
-            var epr = node.expressions[i - 1];
-            strOut += _toValue(epr.eval_res);
+            this.out("${");
+            if (node.expressions[i - 1]) this.walk(node.expressions[i - 1], ctx);
+            this.out("}");
           }
-
           var q = node.quasis[i];
-          strOut += q.value.cooked;
-          // this.walk(q, ctx);
+          this.walk(q, ctx);
         }
-
-        node.eval_res = strOut;
+        this.out("`");
       };
 
       /**
