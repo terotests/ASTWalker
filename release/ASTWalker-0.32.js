@@ -1262,17 +1262,21 @@
         //this.out(node., ctx);
         //this.out("}");
 
-        this.out("`");
+        this.walk(node.expressions);
+
+        var strOut = "";
         for (var i = 0; i < node.quasis.length; i++) {
           if (i > 0) {
-            this.out("${");
-            if (node.expressions[i - 1]) this.walk(node.expressions[i - 1], ctx);
-            this.out("}");
+            var epr = node.expressions[i - 1];
+            strOut += _toValue(epr.eval_res);
           }
+
           var q = node.quasis[i];
-          this.walk(q, ctx);
+          strOut += q.value.cooked;
+          // this.walk(q, ctx);
         }
-        this.out("`");
+
+        node.eval_res = strOut;
       };
 
       /**
