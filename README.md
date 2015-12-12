@@ -48,22 +48,38 @@
 - [ClassDeclaration](README.md#ASTWalker_ClassDeclaration)
 - [ConditionalExpression](README.md#ASTWalker_ConditionalExpression)
 - [ContinueStatement](README.md#ASTWalker_ContinueStatement)
+- [createContext](README.md#ASTWalker_createContext)
+- [createId](README.md#ASTWalker_createId)
+- [createObject](README.md#ASTWalker_createObject)
 - [DebuggerStatement](README.md#ASTWalker_DebuggerStatement)
 - [DoWhileStatement](README.md#ASTWalker_DoWhileStatement)
 - [EmptyStatement](README.md#ASTWalker_EmptyStatement)
 - [endBlock](README.md#ASTWalker_endBlock)
 - [endCollecting](README.md#ASTWalker_endCollecting)
 - [ExpressionStatement](README.md#ASTWalker_ExpressionStatement)
+- [find](README.md#ASTWalker_find)
 - [ForInStatement](README.md#ASTWalker_ForInStatement)
 - [ForOfStatement](README.md#ASTWalker_ForOfStatement)
 - [ForStatement](README.md#ASTWalker_ForStatement)
 - [FunctionDeclaration](README.md#ASTWalker_FunctionDeclaration)
 - [FunctionExpression](README.md#ASTWalker_FunctionExpression)
 - [getCode](README.md#ASTWalker_getCode)
+- [getLineNumber](README.md#ASTWalker_getLineNumber)
+- [getParent](README.md#ASTWalker_getParent)
 - [getStructures](README.md#ASTWalker_getStructures)
 - [Identifier](README.md#ASTWalker_Identifier)
 - [IfStatement](README.md#ASTWalker_IfStatement)
 - [indent](README.md#ASTWalker_indent)
+- [JSXAttribute](README.md#ASTWalker_JSXAttribute)
+- [JSXClosingElement](README.md#ASTWalker_JSXClosingElement)
+- [JSXElement](README.md#ASTWalker_JSXElement)
+- [JSXEmptyExpression](README.md#ASTWalker_JSXEmptyExpression)
+- [JSXExpressionContainer](README.md#ASTWalker_JSXExpressionContainer)
+- [JSXIdentifier](README.md#ASTWalker_JSXIdentifier)
+- [JSXMemberExpression](README.md#ASTWalker_JSXMemberExpression)
+- [JSXNamespacedName](README.md#ASTWalker_JSXNamespacedName)
+- [JSXOpeningElement](README.md#ASTWalker_JSXOpeningElement)
+- [JSXSpreadAttribute](README.md#ASTWalker_JSXSpreadAttribute)
 - [LabeledStatement](README.md#ASTWalker_LabeledStatement)
 - [Literal](README.md#ASTWalker_Literal)
 - [LogicalExpression](README.md#ASTWalker_LogicalExpression)
@@ -80,6 +96,7 @@
 - [pushStructure](README.md#ASTWalker_pushStructure)
 - [RestElement](README.md#ASTWalker_RestElement)
 - [ReturnStatement](README.md#ASTWalker_ReturnStatement)
+- [saveNode](README.md#ASTWalker_saveNode)
 - [SequenceExpression](README.md#ASTWalker_SequenceExpression)
 - [skip](README.md#ASTWalker_skip)
 - [startBlock](README.md#ASTWalker_startBlock)
@@ -88,6 +105,8 @@
 - [Super](README.md#ASTWalker_Super)
 - [SwitchCase](README.md#ASTWalker_SwitchCase)
 - [SwitchStatement](README.md#ASTWalker_SwitchStatement)
+- [TemplateElement](README.md#ASTWalker_TemplateElement)
+- [TemplateLiteral](README.md#ASTWalker_TemplateLiteral)
 - [ThisExpression](README.md#ASTWalker_ThisExpression)
 - [ThrowStatement](README.md#ASTWalker_ThrowStatement)
 - [TryStatement](README.md#ASTWalker_TryStatement)
@@ -405,6 +424,53 @@ if(node.label) this.walk(node.label, ctx);
 this.out("", true);
 ```
 
+### <a name="ASTWalker_createContext"></a>ASTWalker::createContext(parent)
+`parent` Parent context
+ 
+
+
+```javascript
+
+if(!this._objects) {
+    this._objects = {};
+}
+var id = this.createId();
+
+var ctx = {
+    id : id,
+    vars : {},
+    functions : {},
+    parentCtx : parent
+};
+this._objects[id] = ctx;
+
+return ctx;
+```
+
+### <a name="ASTWalker_createId"></a>ASTWalker::createId(prefix)
+`prefix` Opitional prefix
+ 
+
+
+```javascript
+if(!this._localId) {
+    this._localId = 0;
+}
+this._localId++;
+return (prefix ? prefix : "") + this._localId;
+
+```
+
+### <a name="ASTWalker_createObject"></a>ASTWalker::createObject(id, objData)
+
+
+```javascript
+
+if(!this._objects) this._objects = {};
+
+this._objects[id] = objData;
+```
+
 ### <a name="ASTWalker_DebuggerStatement"></a>ASTWalker::DebuggerStatement(node, ctx)
 
 
@@ -478,12 +544,22 @@ this.walk(node.expression, ctx);
 this.out(";", true);
 ```
 
+### <a name="ASTWalker_find"></a>ASTWalker::find(id)
+`id` Object to look for
+ 
+
+
+```javascript
+
+```
+
 ### <a name="ASTWalker_ForInStatement"></a>ASTWalker::ForInStatement(node, ctx)
 
 
 ```javascript
 this.nlIfNot();
-this.out("for(");
+this.out("for");
+this.out("(");
 
 if(node.left) {
     this.trigger("ForInLeft", node.left);
@@ -521,7 +597,8 @@ this.out("", true);
 
 ```javascript
 this.nlIfNot();
-this.out("for(");
+this.out("for");
+this.out("(");
 
 if(node.left) {
     this.trigger("ForOfLeft", node.left);
@@ -558,7 +635,8 @@ this.out("", true);
 
 
 ```javascript
-this.out("for(");
+this.out("for");
+this.out("(");
 
 if(node.init) {
     this.walk(node.init,ctx);
@@ -597,6 +675,10 @@ this.out("", true);
 
 ```javascript
 
+var subCtx = this.createContext( ctx ); 
+
+node.contextId = subCtx.id;
+
 this.out("function");
 
 if(node.generator) this.out("*");
@@ -604,6 +686,9 @@ if(node.generator) this.out("*");
 if(node.id && node.id.name) {
     this.trigger("FunctionName", node);
     this.out(" "+node.id.name+" "); 
+    if(node.id.name) {
+        ctx.functions[node.id.name] = node;
+    }    
 } else {
     this.trigger("FunctionAnonymous", node);
 }
@@ -615,18 +700,17 @@ var cnt=0;
 node.params.forEach(function(p) {
     if(cnt++>0) me.out(",");
     me.trigger("FunctionParam", p);
-    me.walk(p,ctx);   
+    me.walk(p,subCtx);   
     if(node.defaults && node.defaults[cnt-1]) {
         var defP = node.defaults[cnt-1];
         me.out("=");
         me.trigger("FunctionDefaultParam", defP);
-        me.walk( defP, ctx);
+        me.walk( defP, subCtx);
     }
 })   
 
 this.out(")");
 me.trigger("FunctionBody", node.body);
-var subCtx = { parentCtx : ctx };
 this.walk(node.body, subCtx);    
 
 ```
@@ -635,6 +719,10 @@ this.walk(node.body, subCtx);
 
 
 ```javascript
+
+var subCtx = this.createContext( ctx );  // { parentCtx : ctx };
+
+node.contextId = subCtx.id;
 
 if(!this.__insideMethod) this.out("function");
 
@@ -646,6 +734,9 @@ if(node.generator) {
 if(node.id && node.id.name) {
     this.trigger("FunctionName", node);
     this.out(" "+node.id.name+" "); 
+    if(node.id.name) {
+        ctx.functions[node.id.name] == node;
+    }     
 } else {
     this.trigger("FunctionAnonymous", node);
 }
@@ -657,17 +748,17 @@ var cnt=0;
 node.params.forEach(function(p) {
     if(cnt++>0) me.out(",");
     me.trigger("FunctionParam", p);
-    me.walk(p,ctx);   
+    me.walk(p,subCtx);   
     if(node.defaults && node.defaults[cnt-1]) {
         var defP = node.defaults[cnt-1];
         me.out("=");
         me.trigger("FunctionDefaultParam", defP);
-        me.walk( defP, ctx);
+        me.walk( defP, subCtx);
     }
 })   
 
 this.out(")");
-var subCtx = { parentCtx : ctx };
+
 me.trigger("FunctionBody", node.body);
 this.walk(node.body, subCtx);    
 
@@ -678,6 +769,32 @@ this.walk(node.body, subCtx);
 
 ```javascript
 return this._codeStr;
+```
+
+### <a name="ASTWalker_getLineNumber"></a>ASTWalker::getLineNumber(t)
+
+
+```javascript
+return this._lineNumber;
+```
+
+### <a name="ASTWalker_getParent"></a>ASTWalker::getParent(node)
+
+
+```javascript
+
+if(node) {
+    if(node.nodeid) {
+        var p = this._nodeParents[node.nodeid];
+        return p;
+    }
+    return;
+}
+
+if(this._path) {
+    var len = this._path.length;
+    return this._path[len-1];
+}
 ```
 
 ### <a name="ASTWalker_getStructures"></a>ASTWalker::getStructures(t)
@@ -762,6 +879,7 @@ Walks the AST tree, creates events on walk steps
 ```javascript
 
 this._structures = [];
+this._path = [];
 
 this._tabChar = "  ";
 this._codeStr = "";
@@ -771,6 +889,137 @@ this._indent = 0;
 this._options = options || {};
 ```
         
+### <a name="ASTWalker_JSXAttribute"></a>ASTWalker::JSXAttribute(node, ctx)
+
+
+```javascript
+
+this.walk(node.name, ctx);
+this.out("=");
+this.walk(node.value, ctx);
+```
+
+### <a name="ASTWalker_JSXClosingElement"></a>ASTWalker::JSXClosingElement(node, ctx)
+
+
+```javascript
+
+this.out("</");
+this.walk(node.name, ctx);
+// this.out(node.name.name);
+this.out(">");
+```
+
+### <a name="ASTWalker_JSXElement"></a>ASTWalker::JSXElement(node, ctx)
+
+
+```javascript
+
+
+// openingElement
+// closingElement
+// selfClosing
+this.walk(node.openingElement, ctx);
+// --> children
+this.out("", true);
+this.indent(1);
+this.walk(node.children, ctx);
+this.indent(-1);
+if(node.selfClosing) {
+    this.out("/>", true);
+} else {
+    if(node.closingElement) this.walk(node.closingElement, ctx);
+}
+```
+
+### <a name="ASTWalker_JSXEmptyExpression"></a>ASTWalker::JSXEmptyExpression(t)
+
+
+```javascript
+
+```
+
+### <a name="ASTWalker_JSXExpressionContainer"></a>ASTWalker::JSXExpressionContainer(node, ctx)
+
+
+```javascript
+
+
+this.out("{");
+this.walk(node.expression, ctx);
+this.out("}");
+```
+
+### <a name="ASTWalker_JSXIdentifier"></a>ASTWalker::JSXIdentifier(node, ctx)
+
+
+```javascript
+
+this.out(node.name);
+```
+
+### <a name="ASTWalker_JSXMemberExpression"></a>ASTWalker::JSXMemberExpression(node, ctx)
+
+
+```javascript
+
+this.walk(node.object,ctx);
+
+if(node.computed) {
+    this.out("[");
+    this.walk(node.property, ctx);    
+    this.out("]");
+} else {
+    this.out(".");
+    this.walk(node.property, ctx);    
+}
+
+```
+
+### <a name="ASTWalker_JSXNamespacedName"></a>ASTWalker::JSXNamespacedName(node, ctx)
+
+
+```javascript
+
+this.out(node.namespace);
+this.out(":");
+this.out(node.name);
+```
+
+### <a name="ASTWalker_JSXOpeningElement"></a>ASTWalker::JSXOpeningElement(node, ctx)
+
+
+```javascript
+
+// -> would create a component, JSXIdentifier
+
+this.out("<");
+
+this.walk(node.name, ctx);
+this.out(" ");
+this.walk(node.attributes, ctx);
+
+if(node.selfClosing) {
+    this.out("/>");
+} else {
+    this.out(">");    
+}
+```
+
+### <a name="ASTWalker_JSXSpreadAttribute"></a>ASTWalker::JSXSpreadAttribute(node, ctx)
+
+
+```javascript
+
+console.error("JSXSpreadAttribute is not implemented");
+/*
+this.out("{...");
+// argument
+this.walk(node.argument, ctx);
+this.out("}");
+*/
+```
+
 ### <a name="ASTWalker_LabeledStatement"></a>ASTWalker::LabeledStatement(node, ctx)
 
 
@@ -972,6 +1221,9 @@ try {
 
 
 ```javascript
+
+if(this._options.noOutput) return;
+
 if(this._collecting) {
     if(str) {
         if(this._collectLine.length==0) {
@@ -991,16 +1243,21 @@ if(this._collecting) {
 }
 if(str) {
     if(this._currentLine.length==0) {
+        this.trigger("startline");
+        this.trigger("tabs", this._indent);
         for(var i=0; i<this._indent; i++) {
             this._currentLine+= this._tabChar;
         }
     }
+    this.trigger("out", str);
     this._currentLine += str;
 }
 
 if(newline) {
+    this.trigger("newline");
     this._codeStr+=this._currentLine+"\n";
     this._currentLine = "";
+    this._lineNumber++;
 }
 ```
 
@@ -1032,7 +1289,9 @@ this.walk(node.body,ctx, true);
 // kind: "init" | "get" | "set";
 
 this.trigger("ObjectPropertyKey", node.key);
+
 this.walk(node.key, ctx);
+
 if(!node.shorthand) {
     this.out(":");
     this.trigger("ObjectPropertyValue", node.value);
@@ -1071,6 +1330,16 @@ this.out("return ");
 this.trigger("ReturnValue", node.argument);
 this.walk(node.argument, ctx);
 this.out(";");
+```
+
+### <a name="ASTWalker_saveNode"></a>ASTWalker::saveNode(node)
+
+
+```javascript
+
+if(!node.nodeid) node.nodeid = this.createId();
+
+this.createObject( node.nodeid, node );
 ```
 
 ### <a name="ASTWalker_SequenceExpression"></a>ASTWalker::SequenceExpression(node, ctx)
@@ -1125,6 +1394,7 @@ this._path = [];
 
 this._codeStr = "";
 this._currentLine = "";
+this._lineNumber = 0;
 
 this.walk(node, ctx);
 this.out("",true);
@@ -1163,7 +1433,8 @@ if(node.consequent) {
 
 ```javascript
 this.nlIfNot();
-this.out("switch(");
+this.out("switch");
+this.out("(");
 
 this.walk( node.discriminant, ctx );
 this.out(")");
@@ -1184,6 +1455,30 @@ interface SwitchStatement <: Statement {
     lexical: boolean;
 }
 */
+```
+
+### <a name="ASTWalker_TemplateElement"></a>ASTWalker::TemplateElement(node, ctx, notUsed)
+
+
+```javascript
+this.out(node.value.raw);
+```
+
+### <a name="ASTWalker_TemplateLiteral"></a>ASTWalker::TemplateLiteral(node, ctx)
+
+
+```javascript
+this.out("`");
+for(var i=0; i<node.quasis.length;i++) {
+    if(i>0) {
+        this.out("${");
+        if(node.expressions[i-1]) this.walk(node.expressions[i-1],ctx);
+        this.out("}");
+    }
+    var q = node.quasis[i];
+    this.walk(q, ctx);
+}
+this.out("`");
 ```
 
 ### <a name="ASTWalker_ThisExpression"></a>ASTWalker::ThisExpression(node)
@@ -1253,8 +1548,14 @@ if(bNeedsPar) this.out(")");
 ```javascript
 
 this.trigger("UpdateExpressionArgument", node.argument);
-this.walk(node.argument, ctx);
-this.out(node.operator);
+
+if(node.prefix) {
+    this.out(node.operator);  
+    this.walk(node.argument, ctx);
+} else {
+    this.walk(node.argument, ctx);
+    this.out(node.operator);
+}
 ```
 
 ### <a name="ASTWalker_VariableDeclaration"></a>ASTWalker::VariableDeclaration(node, ctx)
@@ -1273,6 +1574,7 @@ if(node.kind=="let") me.out("let ");
 if(node.kind=="const") me.out("const ");   
 var indent=0;
 node.declarations.forEach( function(vd) {
+    if(vd.deleted) return;
     if(cnt++>0) {
         if(cnt==2) {
             indent+=2;
@@ -1284,6 +1586,8 @@ node.declarations.forEach( function(vd) {
 });
 this.indent(-1*indent);
 
+if(cnt==0) this._undoOutput=true;
+
 
 ```
 
@@ -1293,7 +1597,12 @@ this.indent(-1*indent);
 ```javascript
 var me = this;
 
-if(node.id) me.walk(node.id, ctx);
+if(node.id) {
+    me.walk(node.id, ctx);
+    if(node.id.name) {
+        ctx.vars[node.id.name] = node;
+    }
+}
 
 if(node.init) {
     this.out(" = ");
@@ -1322,14 +1631,29 @@ if(!ctx) {
 // What is going on here then...
 if(node instanceof Array) {
     var me = this;
-    this.trigger("nodeArray", node);
+    this.trigger("nodeArray", {
+            node : node,
+            ctx : ctx
+        });
     node.forEach( function(n) {
         me.walk( n, ctx );
         if(newLine) me.nlIfNot(); // insert newline just in case to the end...
     })
     
 } else {
+    
+    if(node.deleted) return;
+    
     if(node.type) {
+        
+        this.saveNode(node);
+        node.contextId = ctx.id;
+        
+        var parentNode = this.getParent();
+        if(!this._nodeParents) this._nodeParents = {};
+        if(parentNode) {
+            this._nodeParents[node.nodeid] = parentNode;
+        }
         var runTime = {
             node : node,
             ctx : ctx
@@ -1346,13 +1670,22 @@ if(node instanceof Array) {
         
         if(this[node.type]) {
             this._path.push(node);
+            
+            var oldLine = this._currentLine;
+            var oldPos  = this._codeStr.length;
             this[node.type](node, ctx);
+            if(this._undoOutput) {
+                this._codeStr = this._codeStr.substring(0, oldPos);
+                this._currentLine = oldLine;
+                this._undoOutput = false;
+            }
             this._path.pop();
         } else {
             console.log("Did not find "+node.type);
             console.log(node);
         }
-        this.trigger("After"+node.type, node);
+        this.trigger("nodeWalked", runTime);
+        this.trigger("After"+node.type, runTime);
     }
 }
 ```
