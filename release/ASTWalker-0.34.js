@@ -808,7 +808,12 @@
        * @param float node
        * @param float ctx
        */
-      _myTrait_.JSXAttribute = function (node, ctx) {};
+      _myTrait_.JSXAttribute = function (node, ctx) {
+
+        this.walk(node.name, ctx);
+        this.out("=");
+        this.walk(node.value, ctx);
+      };
 
       /**
        * @param Object node
@@ -817,7 +822,7 @@
       _myTrait_.JSXClosingElement = function (node, ctx) {
 
         this.out("</");
-        this.walk(node.name);
+        this.walk(node.name, ctx);
         // this.out(node.name.name);
         this.out(">");
       };
@@ -856,7 +861,7 @@
       _myTrait_.JSXExpressionContainer = function (node, ctx) {
 
         this.out("{");
-        this.out(node.expression);
+        this.out(node.expression, ctx);
         this.out("}");
       };
 
