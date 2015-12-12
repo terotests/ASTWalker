@@ -861,7 +861,7 @@
       _myTrait_.JSXExpressionContainer = function (node, ctx) {
 
         this.out("{");
-        this.out(node.expression, ctx);
+        this.walk(node.expression, ctx);
         this.out("}");
       };
 
