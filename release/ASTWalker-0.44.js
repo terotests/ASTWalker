@@ -957,7 +957,7 @@
                 this.out("e.appendChild(expr);", true);
                 this.indent(-1);
                 this.out("}", true);
-                this.out("if(typeof(expr)=='string') {", true);
+                this.out("if(typeof(expr)=='string' || typeof(expr)=='number') {", true);
                 this.indent(1);
                 this.out("e.appendChild(document.createTextNode(expr));", true);
                 this.indent(-1);
