@@ -824,9 +824,7 @@
             var obj = node.name;
             if (obj.object.name == "react") {
               this.out("\"" + obj.property.name + "\",", true);
-            } else {
-              console.error("JSXMemberExpression not currently supported at react Namepace");
-            }
+            } else {}
           } else {
             if (node.name) {
               this.out("\"" + node.name.name + "\",", true);
@@ -1858,3 +1856,5 @@
     define(__amdDefs__);
   }
 }).call(new Function("return this")());
+
+// console.error("JSXMemberExpression not currently supported at react Namepace");
