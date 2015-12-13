@@ -892,6 +892,7 @@
             this.indent(-1);
             this.out("}", true);
             this.indent(-1);
+            this.out("}", true);
             this.out("update();");
 
             ctx._fnCall = prevFnState;
