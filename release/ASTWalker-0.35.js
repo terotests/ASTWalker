@@ -1690,7 +1690,7 @@
                   bDidEnterNs = true;
                 } else {
                   if (!ctx.ns) {
-                    var nameSpace = "react"; // <- default namespace, could be a setting though
+                    var nameSpace = "DOM"; // <- default namespace, could be a setting though
                     if (!ctx.nsStack) ctx.nsStack = [];
                     ctx.nsStack.push(nameSpace);
                     old_ns = ctx.ns;
