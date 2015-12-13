@@ -805,6 +805,87 @@
       });
 
       /**
+       * @param float t
+       */
+      _myTrait_.initReactNamespace = function (t) {
+        _myTrait_.reactJSXAttribute = function (node, ctx) {
+          this.walk(node.name, ctx);
+          this.out(":");
+          this.walk(node.value, ctx);
+        };
+        _myTrait_.reactJSXOpeningElement = function (node, ctx) {
+          this.out("React.createElement(", true);
+          this.indent(1);
+
+          if (node.name.type == "JSXMemberExpression") {
+            var obj = node.name;
+            if (obj.object.name == "react") {
+              this.out("\"" + obj.property.name + "\",", true);
+            } else {
+              console.error("JSXMemberExpression not currently supported at react Namepace");
+            }
+          } else {
+            if (node.name) {
+              this.out("\"" + node.name.name + "\",", true);
+            }
+          }
+          if (node.attributes && node.attributes.length) {
+            this.out("{", true);
+            this.indent(1);
+            for (var i = 0; i < node.attributes.length; i++) {
+              if (i > 0) this.out(",", true);
+              this.walk(node.attributes[i], ctx);
+            }
+            this.indent(-1);
+            this.out("}");
+          } else {
+            this.out("null");
+          }
+          if (node.selfClosing) {
+            this.indent(-1);
+            this.out("");
+            this.out(")", true);
+          }
+        };
+        _myTrait_.reactLiteral = function (node, ctx) {
+          if (ctx._inJSX) {
+            var v = node.value.trim();
+            if (v.length == 0) return;
+
+            this.out("\"");
+            this.out(node.value.trim());
+            this.out("\"");
+          } else {
+            this.out(node.raw);
+          }
+        };
+        _myTrait_.reactJSXExpressionContainer = function (node, ctx) {
+          this.walk(node.expression, ctx);
+        };
+        _myTrait_.reactJSXElement = function (node, ctx) {
+          var inJsx = ctx._inJSX;
+          ctx._inJSX = true;
+          this.walk(node.openingElement, ctx);
+          var cnt = 0;
+          if (node.children) {
+            for (var i = 0; i < node.children.length; i++) {
+              var child = node.children[i];
+              if (child.type == "Literal" && typeof child.value == "string" && child.value.trim().length == 0) continue;
+              this.out(",", true);
+              this.walk(node.children[i], ctx);
+            }
+          }
+          this.walk(node.closingElement, ctx);
+          ctx._inJSX = inJsx;
+        };
+        _myTrait_.reactJSXClosingElement = function (node, ctx) {
+          this.indent(-1);
+          this.out("");
+          this.out(")", true);
+        };
+      };
+
+      /**
        * @param float node
        * @param float ctx
        */
@@ -1601,6 +1682,13 @@
                   // could be entering a namespace
                   var member = node.openingElement.name;
                   var nameSpace = member.object.name;
+                  if (!ctx.nsStack) ctx.nsStack = [];
+                  ctx.nsStack.push(nameSpace);
+                  old_ns = ctx.ns;
+                  ctx.ns = nameSpace;
+                  bDidEnterNs = true;
+                } else {
+                  var nameSpace = "react"; // <- default namespace, could be a setting though
                   if (!ctx.nsStack) ctx.nsStack = [];
                   ctx.nsStack.push(nameSpace);
                   old_ns = ctx.ns;
