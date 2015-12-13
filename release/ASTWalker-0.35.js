@@ -809,6 +809,165 @@
       /**
        * @param float t
        */
+      _myTrait_.initDOMNamespace = function (t) {
+        // simply set the dom attribute to correct value...
+        _myTrait_.DOMJSXAttribute = function (node, ctx) {
+          this.out("\"");
+          this.out(node.name.name);
+          this.out("\"");
+          if (ctx._fnCall) {
+            this.out(":");
+          } else {
+            this.out(",");
+          }
+          this.walk(node.value, ctx);
+        };
+
+        // ---> using function or similar...
+        var _elemNamesList = ["a", "abbr", "acronym", "address", "applet", "area", "article", "aside", "audio", "b", "base", "basefont", "bdi", "bdo", "big", "blockquote", "body", "br", "button", "canvas", "caption", "center", "cite", "code", "col", "colgroup", "datalist", "dd", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", "em", "embed", "fieldset", "figcaption", "figure", "font", "footer", "form", "frame", "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "i", "iframe", "img", "input", "ins", "kbd", "keygen", "label", "legend", "li", "link", "main", "map", "mark", "menu", "menuitem", "meta", "meter", "nav", "noframes", "noscript", "object", "ol", "optgroup", "option", "output", "p", "param", "pre", "progress", "q", "rp", "rt", "ruby", "s", "sampe", "script", "section", "select", "small", "source", "span", "strike", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td", "textarea", "tfoot", "th", "thead", "time", "title", "tr", "track", "tt", "u", "ul", "var", "video", "wbr"];
+        _myTrait_.DOMJSXOpeningElement = function (node, ctx) {
+
+          if (!ctx._inJSX) {
+            ctx._inJSX = 1;
+            this.out("(function(parent) { ", true);
+          } else {
+            this.out("(function(parent) { ", true);
+          }
+          this.indent(1);
+          this.out("var e;");
+
+          var elemName;
+          if (node.name.type == "JSXMemberExpression") {
+            var obj = node.name;
+            if (obj.object.name == ctx.ns) {
+              elemName = obj.property.name;
+            } else {}
+          } else {
+            elemName = node.name.name;
+          }
+          // Here, either function or element....
+          // --->
+
+          // Allowed eleme names etc...
+          if (_elemNamesList.indexOf(elemName) >= 0) {
+            this.out("e=document.createElement('" + elemName + "');", true);
+            // this.out("if(parent) parent.appendChild(e);")
+
+            if (node.attributes && node.attributes.length) {
+              for (var i = 0; i < node.attributes.length; i++) {
+                if (i > 0) this.out(",", true);
+                this.out("e.setAttribute(");
+                this.walk(node.attributes[i], ctx);
+                this.out(");", true);
+              }
+            } else {}
+          } else {
+            this.out("e = " + elemName + "(");
+            var prevFnState = ctx._fnCall;
+            ctx._fnCall = true;
+            if (node.attributes && node.attributes.length) {
+              this.out("{", true);
+              this.indent(1);
+              for (var i = 0; i < node.attributes.length; i++) {
+                if (i > 0) this.out(",", true);
+                this.walk(node.attributes[i], ctx);
+              }
+              this.indent(-1);
+              this.out("}");
+            }
+            ctx._fnCall = prevFnState;
+            this.out(");", true);
+          }
+
+          if (node.selfClosing) {
+            ctx._inJSX--;
+            this.out("return e;");
+            this.indent(-1);
+            this.out("})()", true);
+          } else {}
+        };
+        _myTrait_.DOMLiteral = function (node, ctx) {
+          if (ctx._inJSX) {
+            if (typeof node.value == "string") {
+              this.out("\"");
+              this.out(node.value.trim());
+              this.out("\"");
+            } else {
+              this.out(node.value);
+            }
+          } else {
+            this.out(node.raw);
+          }
+        };
+        _myTrait_.DOMJSXExpressionContainer = function (node, ctx) {
+          this.walk(node.expression, ctx);
+        };
+        _myTrait_.DOMJSXElement = function (node, ctx) {
+          var inJsx = ctx._inDOM;
+          ctx._inJSX = true;
+          var bExpr = false;
+          this.walk(node.openingElement, ctx);
+          var cnt = 0;
+          if (node.children) {
+
+            for (var i = 0; i < node.children.length; i++) {
+              var child = node.children[i];
+              if (child.type == "JSXElement") {
+                this.out("e.appendChild(");
+                this.indent(1);
+                this.walk(child, ctx);
+                this.indent(-1);
+                this.out(")", true);
+              }
+              if (child.type == "Literal") {
+                this.out("e.appendChild(document.createTextNode(");
+                this.walk(child, ctx);
+                this.out("))", true);
+              }
+              if (child.type == "JSXExpressionContainer") {
+                if (!bExpr) {
+                  this.out("var expr=");
+                  this.walk(child, ctx);
+                  this.out(";", true);
+                }
+                this.out("if(expr instanceof Array) {", true);
+                this.indent(1);
+                this.out("expr.forEach(function(ee){e.appendChild(ee)});", true);
+                this.indent(-1);
+                this.out("} else {");
+                this.indent(1);
+                this.out("if(typeof(expr)=='object') {", true);
+                this.indent(1);
+                this.out("e.appendChild(expr);", true);
+                this.indent(-1);
+                this.out("}", true);
+                this.out("if(typeof(expr)=='string') {", true);
+                this.indent(1);
+                this.out("e.appendChild(document.createTextNode(expr));", true);
+                this.indent(-1);
+                this.out("}", true);
+
+                this.indent(-1);
+                this.out("}");
+                //this.out("e.appendChild(document.createTextNode(");
+                //this.walk(child, ctx);
+                //this.out("))",true);                           
+              }
+            }
+          }
+          this.walk(node.closingElement, ctx);
+          ctx._inJSX = inJsx;
+        };
+        _myTrait_.DOMJSXClosingElement = function (node, ctx) {
+          this.out("return e;", true);
+          this.indent(-1);
+          this.out("})()", true);
+        };
+      };
+
+      /**
+       * @param float t
+       */
       _myTrait_.initReactNamespace = function (t) {
         _myTrait_.reactJSXAttribute = function (node, ctx) {
           this.walk(node.name, ctx);
@@ -1856,5 +2015,9 @@
     define(__amdDefs__);
   }
 }).call(new Function("return this")());
+
+// console.error("JSXMemberExpression not currently supported at react Namepace");
+
+// this.out("null");
 
 // console.error("JSXMemberExpression not currently supported at react Namepace");
