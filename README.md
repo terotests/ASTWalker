@@ -70,6 +70,8 @@
 - [Identifier](README.md#ASTWalker_Identifier)
 - [IfStatement](README.md#ASTWalker_IfStatement)
 - [indent](README.md#ASTWalker_indent)
+- [initDOMNamespace](README.md#ASTWalker_initDOMNamespace)
+- [initReactNamespace](README.md#ASTWalker_initReactNamespace)
 - [JSXAttribute](README.md#ASTWalker_JSXAttribute)
 - [JSXClosingElement](README.md#ASTWalker_JSXClosingElement)
 - [JSXElement](README.md#ASTWalker_JSXElement)
@@ -887,8 +889,268 @@ this._currentLine = "";
 this._indent = 0;
 
 this._options = options || {};
+
+this.initReactNamespace();
+this.initDOMNamespace();
 ```
         
+### <a name="ASTWalker_initDOMNamespace"></a>ASTWalker::initDOMNamespace(t)
+
+
+```javascript
+ // simply set the dom attribute to correct value...
+_myTrait_.DOMJSXAttribute = function(node, ctx) {
+      this.out("\"");
+      this.out(node.name.name);
+      this.out("\"");
+      if(ctx._fnCall) {
+        this.out(":");
+      } else {
+        this.out(",");
+      }
+      this.walk(node.value,ctx);
+ }
+
+ // ---> using function or similar...
+var _elemNamesList = ["a", "abbr", "acronym","address","applet","area","article","aside","audio",
+"b","base","basefont","bdi","bdo","big","blockquote","body","br","button","canvas",
+"caption","center","cite","code","col","colgroup","datalist","dd","del","details",
+"dfn","dialog","dir","div","dl","dt","em","embed","fieldset","figcaption","figure","font",
+"footer","form","frame","frameset","h1","h2","h3","h4","h5","h6","head","header","hgroup",
+"hr","html","i","iframe","img","input","ins","kbd","keygen","label","legend","li","link",
+"main","map","mark","menu","menuitem","meta","meter","nav","noframes","noscript","object",
+"ol","optgroup","option","output","p","param","pre","progress","q","rp","rt","ruby",
+"s","sampe","script","section","select","small","source","span","strike","strong","style",
+"sub","summary","sup","table","tbody","td","textarea","tfoot","th","thead","time","title",
+"tr","track","tt","u","ul","var","video","wbr"];
+ _myTrait_.DOMJSXOpeningElement = function(node,ctx) {
+    
+    if(!ctx._inJSX) {
+      ctx._inJSX = 1;
+      this.out("(function() { ",true);
+      
+    } else {
+      this.out("(function() { ", true);
+    }
+    this.indent(1);
+    this.out("var e;");
+    
+    var elemName;
+    if(node.name.type=="JSXMemberExpression") {
+        var obj = node.name;
+        if(obj.object.name == ctx.ns) {
+            elemName = obj.property.name;
+            
+        } else {
+            // console.error("JSXMemberExpression not currently supported at react Namepace");
+        }
+    } else {                        
+        elemName = node.name.name;
+    }
+    // Here, either function or element....
+    // --->
+
+    // Allowed eleme names etc...
+    if(_elemNamesList.indexOf(elemName)>=0) {
+      this.out("e=document.createElement('"+elemName+"');",true);
+      // this.out("if(parent) parent.appendChild(e);")
+
+      if(node.attributes && node.attributes.length) {
+          for(var i=0; i<node.attributes.length;i++) {
+            this.out("e.setAttribute(");
+            this.walk(node.attributes[i],ctx);
+            this.out(");",true);
+          }
+      } else {
+        // this.out("null");
+      }                       
+    } else {
+        this.out("e = " + elemName + "(");
+        var prevFnState = ctx._fnCall;
+        ctx._fnCall = true;
+        if (node.attributes && node.attributes.length) {
+          this.out("{", true);
+          this.indent(1);
+          for (var i = 0; i < node.attributes.length; i++) {
+            if (i > 0) this.out(",", true);
+            this.walk(node.attributes[i], ctx);
+          }
+          this.indent(-1);
+          this.out("}");
+        }
+        ctx._fnCall = prevFnState;
+        this.out(");", true);          
+    }
+
+    if(node.selfClosing) {
+        ctx._inJSX--;
+        this.out("return e;");
+        this.indent(-1);
+        this.out("})()",true);
+
+    } else {
+
+    }
+ }        
+ _myTrait_.DOMLiteral = function(node,ctx) {
+    if(typeof(node.value)=="string") {
+      this.out("\"");
+      this.out(node.value);
+      this.out("\"");
+    } else {
+      this.out(node.value);
+    }
+ }
+ _myTrait_.DOMJSXExpressionContainer = function(node,ctx) {
+    this.walk(node.expression, ctx);
+ }
+ _myTrait_.DOMJSXElement = function(node,ctx) {
+    var inJsx = ctx._inDOM;
+    ctx._inJSX = true;
+    var bExpr = false;
+    this.walk(node.openingElement, ctx);
+    var cnt=0;
+    if(node.children) {
+
+        for(var i=0; i<node.children.length;i++) {
+          var child = node.children[i];
+          if(child.type=="JSXElement") {
+              this.out("e.appendChild(");
+              this.indent(1);
+              this.walk(child,ctx);
+              this.indent(-1);
+              this.out(")",true);
+          }    
+          if(child.type=="Literal") {
+              this.out("e.appendChild(document.createTextNode(");
+              this.walk(child,ctx);
+              this.out("))",true);
+          }
+          if(child.type=="JSXExpressionContainer") {
+              if(!bExpr) {
+                this.out("var expr=")
+                this.walk(child, ctx);
+                this.out(";",true);
+              }
+              this.out("if(expr instanceof Array) {",true);
+              this.indent(1);
+              this.out('expr.forEach(function(ee){e.appendChild(ee)});',true)
+              this.indent(-1);
+              this.out("} else {");
+              this.indent(1);
+                this.out("if(typeof(expr)=='object') {",true);
+                  this.indent(1);
+                  this.out("e.appendChild(expr);",true);
+                  this.indent(-1);
+                this.out("}",true);                               
+                this.out("if(typeof(expr)=='string' || typeof(expr)=='number') {",true);
+                  this.indent(1);
+                  this.out("e.appendChild(document.createTextNode(expr));",true);
+                  this.indent(-1);
+                this.out("}",true);  
+                  
+              this.indent(-1);
+              this.out("}");                              
+              //this.out("e.appendChild(document.createTextNode(");
+              //this.walk(child, ctx);
+              //this.out("))",true);                             
+          }
+        }
+    }
+    this.walk(node.closingElement, ctx);
+    ctx._inJSX = inJsx;
+ }                          
+ _myTrait_.DOMJSXClosingElement = function(node,ctx) {
+    this.out("return e;",true);
+    this.indent(-1);
+    this.out("})()",true);
+ }
+```
+
+### <a name="ASTWalker_initReactNamespace"></a>ASTWalker::initReactNamespace(t)
+
+
+```javascript
+ _myTrait_.reactJSXAttribute = function(node,ctx) {
+    this.walk(node.name, ctx);
+    this.out(":");
+    this.walk(node.value, ctx);
+ }
+ _myTrait_.reactJSXOpeningElement = function(node,ctx) {
+    console.log("reactJSXOpeningElement at namepace "+ctx.ns);
+    this.out("React.createElement(", true);
+    this.indent(1);
+    
+    if(node.name.type=="JSXMemberExpression") {
+        var obj = node.name;
+        if(obj.object.name == "react") {
+            this.out("\""+obj.property.name+"\",",true);
+        } else {
+            // console.error("JSXMemberExpression not currently supported at react Namepace");
+        }
+    } else {
+        if(node.name) {
+          this.out("\""+node.name.name+"\",",true);
+        }
+    }
+    if(node.attributes && node.attributes.length) {
+        this.out("{",true);
+        this.indent(1);
+        for(var i=0; i<node.attributes.length;i++) {
+          if(i>0) this.out(",",true);
+          this.walk(node.attributes[i],ctx);
+        }
+        this.indent(-1);
+        this.out("}");
+    } else {
+      this.out("null");
+    }                  
+    if(node.selfClosing) {
+        this.indent(-1);
+        this.out("");
+        this.out(")",true);                  
+    }
+ }        
+ _myTrait_.reactLiteral = function(node,ctx) {
+    if(ctx._inJSX) {
+      var v = node.value.trim();
+      if(v.length==0) return;
+
+      this.out("\"");
+      this.out(node.value.trim());
+      this.out("\"");
+    } else {
+      this.out(node.raw);
+    }
+    
+ }
+ _myTrait_.reactJSXExpressionContainer = function(node,ctx) {
+    this.walk(node.expression, ctx);
+ }
+ _myTrait_.reactJSXElement = function(node,ctx) {
+    var inJsx = ctx._inJSX;
+    ctx._inJSX = true;
+    this.walk(node.openingElement, ctx);
+    var cnt=0;
+    if(node.children) {
+        for(var i=0; i<node.children.length;i++) {
+          var child = node.children[i];
+          if(child.type=="Literal" && typeof(child.value)=="string" && child.value.trim().length==0) continue;
+          this.out(",",true);
+          this.walk(node.children[i],ctx);
+        }
+    }
+    this.walk(node.closingElement, ctx);
+    ctx._inJSX = inJsx;
+ }                          
+ _myTrait_.reactJSXClosingElement = function(node,ctx) {
+    this.indent(-1);
+    this.out("");
+    this.out(")",true);
+
+ }
+```
+
 ### <a name="ASTWalker_JSXAttribute"></a>ASTWalker::JSXAttribute(node, ctx)
 
 
@@ -1673,7 +1935,42 @@ if(node instanceof Array) {
             
             var oldLine = this._currentLine;
             var oldPos  = this._codeStr.length;
-            this[node.type](node, ctx);
+            var bDidEnterNs = false, old_ns;
+            if(node.type=="JSXElement" && node.openingElement && node.openingElement.name) {
+                if(node.openingElement.name.type=="JSXMemberExpression") {
+                    // could be entering a namespace
+                    var member = node.openingElement.name;
+                    var nameSpace = member.object.name;
+                    if(!ctx.nsStack) ctx.nsStack = [];
+                    ctx.nsStack.push(nameSpace);
+                    old_ns = ctx.ns;
+                    ctx.ns = nameSpace;
+                    bDidEnterNs = true;
+                } else {
+                    if(!ctx.ns) {
+                        var nameSpace = "DOM"; // <- default namespace, could be a setting though
+                        if(!ctx.nsStack) ctx.nsStack = [];
+                        ctx.nsStack.push(nameSpace);
+                        old_ns = ctx.ns;
+                        ctx.ns = nameSpace;
+                        bDidEnterNs = true;  
+                    }
+                }
+            }
+            if(ctx.ns) {
+                var tryThis = ctx.ns+node.type;
+                if(typeof(this[tryThis]) != "undefined") {
+                    this[tryThis](node, ctx);
+                } else {
+                    this[node.type](node, ctx);
+                }
+            } else {
+                this[node.type](node, ctx);
+            }
+            if(bDidEnterNs) {
+                ctx.nsStack.pop();
+                ctx.ns = old_ns;
+            }
             if(this._undoOutput) {
                 this._codeStr = this._codeStr.substring(0, oldPos);
                 this._currentLine = oldLine;
