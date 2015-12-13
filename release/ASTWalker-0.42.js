@@ -882,7 +882,7 @@
             }
             this.out(",update);", true);
             // parentNode.replaceChild(newChild, oldChild);
-            this.out("if(e.parentNode) { ", true);
+            this.out("if(e && e.parentNode) { ", true);
             this.indent(1);
             this.out("e.parentNode.replaceChild(ne,e); ", true);
             this.indent(-1);
