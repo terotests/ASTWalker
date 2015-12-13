@@ -802,6 +802,8 @@
         this._indent = 0;
 
         this._options = options || {};
+
+        this.initReactNamespace();
       });
 
       /**
@@ -814,6 +816,7 @@
           this.walk(node.value, ctx);
         };
         _myTrait_.reactJSXOpeningElement = function (node, ctx) {
+          console.log("reactJSXOpeningElement at namepace " + ctx.ns);
           this.out("React.createElement(", true);
           this.indent(1);
 
