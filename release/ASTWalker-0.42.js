@@ -862,8 +862,8 @@
               }
             } else {}
           } else {
-            this.out("var update;");
-            this.out("update = function() { ");
+            this.out("var update;", true);
+            this.out("update = function() { ", true);
             this.indent(1);
             this.out("var ne = " + elemName + "(");
             var prevFnState = ctx._fnCall;
@@ -895,7 +895,7 @@
             this.out("update();");
 
             ctx._fnCall = prevFnState;
-            this.out(");", true);
+            // this.out(");",true);            
           }
 
           if (node.selfClosing) {
