@@ -1691,12 +1691,14 @@
                   ctx.ns = nameSpace;
                   bDidEnterNs = true;
                 } else {
-                  var nameSpace = "react"; // <- default namespace, could be a setting though
-                  if (!ctx.nsStack) ctx.nsStack = [];
-                  ctx.nsStack.push(nameSpace);
-                  old_ns = ctx.ns;
-                  ctx.ns = nameSpace;
-                  bDidEnterNs = true;
+                  if (!ctx.ns) {
+                    var nameSpace = "react"; // <- default namespace, could be a setting though
+                    if (!ctx.nsStack) ctx.nsStack = [];
+                    ctx.nsStack.push(nameSpace);
+                    old_ns = ctx.ns;
+                    ctx.ns = nameSpace;
+                    bDidEnterNs = true;
+                  }
                 }
               }
               if (ctx.ns) {
