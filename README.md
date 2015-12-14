@@ -898,7 +898,21 @@ this.initDOMNamespace();
 
 
 ```javascript
- // simply set the dom attribute to correct value...
+
+// tags that will be converted to DOM element access
+var _elemNamesList = ["a", "abbr", "acronym","address","applet","area","article","aside","audio",
+"b","base","basefont","bdi","bdo","big","blockquote","body","br","button","canvas",
+"caption","center","cite","code","col","colgroup","datalist","dd","del","details",
+"dfn","dialog","dir","div","dl","dt","em","embed","fieldset","figcaption","figure","font",
+"footer","form","frame","frameset","h1","h2","h3","h4","h5","h6","head","header","hgroup",
+"hr","html","i","iframe","img","input","ins","kbd","keygen","label","legend","li","link",
+"main","map","mark","menu","menuitem","meta","meter","nav","noframes","noscript","object",
+"ol","optgroup","option","output","p","param","pre","progress","q","rp","rt","ruby",
+"s","sampe","script","section","select","small","source","span","strike","strong","style",
+"sub","summary","sup","table","tbody","td","textarea","tfoot","th","thead","time","title",
+"tr","track","tt","u","ul","var","video","wbr"];
+
+ // _fnCall indicates the result is a key-value of an object expression
 _myTrait_.DOMJSXAttribute = function(node, ctx) {
       this.out("\"");
       this.out(node.name.name);
@@ -911,18 +925,6 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
       this.walk(node.value,ctx);
  }
 
- // ---> using function or similar...
-var _elemNamesList = ["a", "abbr", "acronym","address","applet","area","article","aside","audio",
-"b","base","basefont","bdi","bdo","big","blockquote","body","br","button","canvas",
-"caption","center","cite","code","col","colgroup","datalist","dd","del","details",
-"dfn","dialog","dir","div","dl","dt","em","embed","fieldset","figcaption","figure","font",
-"footer","form","frame","frameset","h1","h2","h3","h4","h5","h6","head","header","hgroup",
-"hr","html","i","iframe","img","input","ins","kbd","keygen","label","legend","li","link",
-"main","map","mark","menu","menuitem","meta","meter","nav","noframes","noscript","object",
-"ol","optgroup","option","output","p","param","pre","progress","q","rp","rt","ruby",
-"s","sampe","script","section","select","small","source","span","strike","strong","style",
-"sub","summary","sup","table","tbody","td","textarea","tfoot","th","thead","time","title",
-"tr","track","tt","u","ul","var","video","wbr"];
  _myTrait_.DOMJSXOpeningElement = function(node,ctx) {
     
     if(!ctx._inJSX) {
@@ -947,13 +949,11 @@ var _elemNamesList = ["a", "abbr", "acronym","address","applet","area","article"
     } else {                        
         elemName = node.name.name;
     }
-    // Here, either function or element....
-    // --->
 
-    // Allowed eleme names etc...
+
+    // Allowed elem names etc...
     if(_elemNamesList.indexOf(elemName)>=0) {
       this.out("e=document.createElement('"+elemName+"');",true);
-      // this.out("if(parent) parent.appendChild(e);")
 
       if(node.attributes && node.attributes.length) {
           for(var i=0; i<node.attributes.length;i++) {
@@ -1051,9 +1051,7 @@ var _elemNamesList = ["a", "abbr", "acronym","address","applet","area","article"
                   
               this.indent(-1);
               this.out("}");                              
-              //this.out("e.appendChild(document.createTextNode(");
-              //this.walk(child, ctx);
-              //this.out("))",true);                             
+                            
           }
         }
     }
