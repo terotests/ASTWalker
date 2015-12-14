@@ -837,7 +837,7 @@
             this.out("(function() { ", true);
           }
           this.indent(1);
-          this.out("var e;", true);
+          this.out("var e,me=this;", true);
 
           var elemName;
           if (node.name.type == "JSXMemberExpression") {
@@ -855,6 +855,14 @@
 
             if (node.attributes && node.attributes.length) {
               for (var i = 0; i < node.attributes.length; i++) {
+                var attrName = node.attributes[i].name.name;
+                if (attrName && attrName.substring(0, 2) == "on") {
+                  var eventName = attrName.slice(2).toLowerCase();
+                  this.out("e.addEventListener('" + eventName + "', function(){me['" + eventName + "'](");
+                  this.walk(node.attributes[i].value, ctx);
+                  this.out(")})");
+                  continue;
+                }
                 this.out("e.setAttribute(");
                 this.walk(node.attributes[i], ctx);
                 this.out(");", true);
