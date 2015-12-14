@@ -960,7 +960,7 @@
             }
           }
           this.walk(node.closingElement, ctx);
-          if (!inJsx) this.out(";", true);
+          // if(!inJsx) this.out(";", true);
           ctx._inJSX = inJsx;
         };
         _myTrait_.DOMJSXClosingElement = function (node, ctx) {
