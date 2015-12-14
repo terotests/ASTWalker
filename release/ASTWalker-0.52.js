@@ -858,9 +858,10 @@
                 var attrName = node.attributes[i].name.name;
                 if (attrName && attrName.substring(0, 2) == "on") {
                   var eventName = attrName.slice(2).toLowerCase();
+                  // e.addEventListener('click', function(){me['click']("ok")});return e;}).apply(this,[])
                   this.out("e.addEventListener('" + eventName + "', function(){me['" + eventName + "'](");
                   this.walk(node.attributes[i].value, ctx);
-                  this.out(")})");
+                  this.out(")});", true);
                   continue;
                 }
                 this.out("e.setAttribute(");
