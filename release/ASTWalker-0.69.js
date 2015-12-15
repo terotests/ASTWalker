@@ -909,7 +909,8 @@
         _myTrait_.DOMLiteral = function (node, ctx) {
           if (typeof node.value == "string") {
             this.out("\"");
-            this.out(node.value);
+            this.out(node.value.split("\n").join("\\n"));
+            // this.out(node.value);
             this.out("\"");
           } else {
             this.out(node.value);
@@ -1223,7 +1224,8 @@
         _myTrait_.SVGLiteral = function (node, ctx) {
           if (typeof node.value == "string") {
             this.out("\"");
-            this.out(node.value);
+            this.out(node.value.split("\n").join("\\n"));
+            // this.out(node.value);
             this.out("\"");
           } else {
             this.out(node.value);
