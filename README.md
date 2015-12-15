@@ -72,6 +72,7 @@
 - [indent](README.md#ASTWalker_indent)
 - [initDOMNamespace](README.md#ASTWalker_initDOMNamespace)
 - [initReactNamespace](README.md#ASTWalker_initReactNamespace)
+- [initSVGNamespace](README.md#ASTWalker_initSVGNamespace)
 - [JSXAttribute](README.md#ASTWalker_JSXAttribute)
 - [JSXClosingElement](README.md#ASTWalker_JSXClosingElement)
 - [JSXElement](README.md#ASTWalker_JSXElement)
@@ -563,10 +564,14 @@ this.nlIfNot();
 this.out("for");
 this.out("(");
 
+var oldf = ctx._forVar;
+ctx._forVar = 1;
 if(node.left) {
     this.trigger("ForInLeft", node.left);
     this.walk(node.left,ctx);
 }
+ctx._forVar = oldf;
+
 this.out(" in ");
 if(node.right) {
     this.trigger("ForInRight", node.right);
@@ -602,10 +607,13 @@ this.nlIfNot();
 this.out("for");
 this.out("(");
 
+var oldf = ctx._forVar;
+ctx._forVar = 1;
 if(node.left) {
     this.trigger("ForOfLeft", node.left);
     this.walk(node.left,ctx);
 }
+ctx._forVar = oldf;
 this.out(" of ");
 if(node.right) {
     this.trigger("ForOfRight", node.right);
@@ -639,10 +647,12 @@ this.out("", true);
 ```javascript
 this.out("for");
 this.out("(");
-
+var oldf = ctx._forVar;
+ctx._forVar = 1;
 if(node.init) {
     this.walk(node.init,ctx);
 }
+ctx._forVar = oldf;
 this.out("; ");
 if(node.test) {
     this.walk(node.test,ctx);
@@ -892,6 +902,7 @@ this._options = options || {};
 
 this.initReactNamespace();
 this.initDOMNamespace();
+this.initSVGNamespace();
 ```
         
 ### <a name="ASTWalker_initDOMNamespace"></a>ASTWalker::initDOMNamespace(t)
@@ -915,7 +926,13 @@ var _elemNamesList = ["a", "abbr", "acronym","address","applet","area","article"
  // _fnCall indicates the result is a key-value of an object expression
 _myTrait_.DOMJSXAttribute = function(node, ctx) {
       this.out("\"");
-      this.out(node.name.name);
+      if(node.name.type=="JSXNamespacedName") {
+        this.out(node.name.namespace.name);   
+        this.out(":");
+        this.out(node.name.name.name);  
+      } else {
+        this.out(node.name.name);
+      }
       this.out("\"");
       if(ctx._fnCall) {
         this.out(":");
@@ -927,15 +944,9 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
 
  _myTrait_.DOMJSXOpeningElement = function(node,ctx) {
     
-    if(!ctx._inJSX) {
-      ctx._inJSX = 1;
-      this.out("(function() { ",true);
-      
-    } else {
-      this.out("(function() { ", true);
-    }
+    this.out("(function() { ",true);
     this.indent(1);
-    this.out("var e;");
+    this.out("var e,me=this;",true);
     
     var elemName;
     if(node.name.type=="JSXMemberExpression") {
@@ -957,6 +968,15 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
 
       if(node.attributes && node.attributes.length) {
           for(var i=0; i<node.attributes.length;i++) {
+            var attrName = node.attributes[i].name.name;
+            if(attrName && attrName.substring(0,2)=="on") {
+                var eventName = attrName.slice(2).toLowerCase();
+                // e.addEventListener('click', function(){me['click']("ok")});return e;}).apply(this,[])
+                this.out("e.addEventListener('"+eventName+"', function(){me['"+attrName+"'](");
+                this.walk(node.attributes[i].value,ctx);
+                this.out(")});",true); 
+                continue;
+            }
             this.out("e.setAttribute(");
             this.walk(node.attributes[i],ctx);
             this.out(");",true);
@@ -965,7 +985,9 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
         // this.out("null");
       }                       
     } else {
-        this.out("e = " + elemName + "(");
+        this.out("var self = function(){this.parent=me;};");
+        this.out("self.prototype = this;",true);
+        this.out("e = " + elemName + ".apply(new self(),[");
         var prevFnState = ctx._fnCall;
         ctx._fnCall = true;
         if (node.attributes && node.attributes.length) {
@@ -979,14 +1001,13 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
           this.out("}");
         }
         ctx._fnCall = prevFnState;
-        this.out(");", true);          
+        this.out("]);", true);          
     }
 
     if(node.selfClosing) {
-        ctx._inJSX--;
         this.out("return e;");
         this.indent(-1);
-        this.out("})()",true);
+        this.out("}).apply(this,[])",true);
 
     } else {
 
@@ -995,7 +1016,8 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
  _myTrait_.DOMLiteral = function(node,ctx) {
     if(typeof(node.value)=="string") {
       this.out("\"");
-      this.out(node.value);
+      this.out(node.value.split("\n").join("\\n"));
+      // this.out(node.value);
       this.out("\"");
     } else {
       this.out(node.value);
@@ -1005,7 +1027,7 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
     this.walk(node.expression, ctx);
  }
  _myTrait_.DOMJSXElement = function(node,ctx) {
-    var inJsx = ctx._inDOM;
+    var inJsx = ctx._inJSX;
     ctx._inJSX = true;
     var bExpr = false;
     this.walk(node.openingElement, ctx);
@@ -1022,9 +1044,16 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
               this.out(")",true);
           }    
           if(child.type=="Literal") {
-              this.out("e.appendChild(document.createTextNode(");
-              this.walk(child,ctx);
-              this.out("))",true);
+              var value = child.value;
+              if(typeof(value)=="string") {
+                  var lines = value.split("\n");
+                  var str = lines.join("\\n");
+                  this.out("e.appendChild(document.createTextNode(\""+str+"\"));",true);
+              } else {
+                  this.out("e.appendChild(document.createTextNode(");
+                  this.walk(child,ctx);
+                  this.out("))",true);
+              }
           }
           if(child.type=="JSXExpressionContainer") {
               if(!bExpr) {
@@ -1032,22 +1061,23 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
                 this.walk(child, ctx);
                 this.out(";",true);
               }
-              this.out("if(expr instanceof Array) {",true);
-              this.indent(1);
-              this.out('expr.forEach(function(ee){e.appendChild(ee)});',true)
-              this.indent(-1);
+              this.out("if(typeof(expr)=='string' || typeof(expr)=='number') {",true);
+                  this.indent(1);
+                  this.out("e.appendChild(document.createTextNode(expr));",true);
+                  this.indent(-1);
               this.out("} else {");
               this.indent(1);
-                this.out("if(typeof(expr)=='object') {",true);
+                this.out("if(expr instanceof Array) {",true);
+                this.indent(1);
+                this.out('expr.forEach(function(ee){e.appendChild(ee)});',true)
+                this.indent(-1);
+                this.out("} else { ",true);              
+                this.out("if(typeof(expr)=='object')",true);
                   this.indent(1);
                   this.out("e.appendChild(expr);",true);
                   this.indent(-1);
                 this.out("}",true);                               
-                this.out("if(typeof(expr)=='string' || typeof(expr)=='number') {",true);
-                  this.indent(1);
-                  this.out("e.appendChild(document.createTextNode(expr));",true);
-                  this.indent(-1);
-                this.out("}",true);  
+
                   
               this.indent(-1);
               this.out("}");                              
@@ -1056,12 +1086,13 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
         }
     }
     this.walk(node.closingElement, ctx);
+    // if(!inJsx) this.out(";", true);
     ctx._inJSX = inJsx;
  }                          
  _myTrait_.DOMJSXClosingElement = function(node,ctx) {
     this.out("return e;",true);
     this.indent(-1);
-    this.out("})()",true);
+    this.out("}).apply(this,[])",true);
  }
 ```
 
@@ -1146,6 +1177,275 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
     this.out("");
     this.out(")",true);
 
+ }
+```
+
+### <a name="ASTWalker_initSVGNamespace"></a>ASTWalker::initSVGNamespace(t)
+
+
+```javascript
+
+// tags that will be converted to DOM element access
+var _elemNamesList = [ "circle",
+        "rect",
+        "path",
+        "svg",
+        "image",
+        "line",
+        "text",
+        "tspan",
+        "g",
+        "pattern",
+        "polygon",
+        "polyline",
+        "clippath",
+        "defs",
+        "feoffset",
+        "femerge",
+        "femergenode",
+        "linearGradient",
+        "mask",
+        "polyline",
+        "feColorMatrix",
+        "radialGradient",
+        "stop",
+        "feGaussianBlur",
+        "filter"];
+
+if(!this._autoNs) this._autoNs = {};
+
+var me = this;
+_elemNamesList.forEach(function(n) {
+    me._autoNs[n] = "SVG";
+})
+
+/*
+circle clipPath defs ellipse g line linearGradient mask path pattern polygon polyline
+radialGradient rect stop svg text tspan
+*/
+var svgNS = "http://www.w3.org/2000/svg";  
+
+ // _fnCall indicates the result is a key-value of an object expression
+_myTrait_.SVGJSXAttribute = function(node, ctx) {
+      this.out("\"");
+      this.out(node.name.name);
+      this.out("\"");
+      if(ctx._fnCall) {
+        this.out(":");
+      } else {
+        this.out(",");
+      }
+      this.walk(node.value,ctx);
+ }
+ 
+ _myTrait_.SVGJSXOpeningElement = function(node,ctx) {
+    
+    this.out("(function() { ",true);
+    this.indent(1);
+    this.out("var e,me=this;",true);
+    
+    var elemName, bRootSvg=false;
+    if(node.name.type=="JSXMemberExpression") {
+        var obj = node.name;
+        if(obj.object.name == ctx.ns) {
+            elemName = obj.property.name;
+            
+        } else {
+            // console.error("JSXMemberExpression not currently supported at react Namepace");
+        }
+    } else {                        
+        elemName = node.name.name;
+    }
+
+
+    // Allowed elem names etc...
+    if(_elemNamesList.indexOf(elemName)>=0) {
+      if(elemName=="svg") {
+          this.out("e=document.createElementNS('http://www.w3.org/2000/svg', 'svg');",true);
+          this.out('e.setAttribute("xmlns", "http://www.w3.org/2000/svg");',true);
+          this.out('e.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");',true);
+          bRootSvg=true;
+      } else {
+          this.out("e=document.createElementNS('http://www.w3.org/2000/svg', '"+elemName+"');",true);
+      }
+
+      if(node.attributes && node.attributes.length) {
+          for(var i=0; i<node.attributes.length;i++) {
+            var attr = node.attributes[i].name;
+            if(attr.type=="JSXIdentifier") {
+                var attrName = attr.name;
+                if(attrName && attrName.substring(0,2)=="on") {
+                    var eventName = attrName.slice(2).toLowerCase();
+                    // e.addEventListener('click', function(){me['click']("ok")});return e;}).apply(this,[])
+                    this.out("e.addEventListener('"+eventName+"', function(){me['"+attrName+"'](");
+                    this.walk(node.attributes[i].value,ctx);
+                    this.out(")});",true); 
+                    continue;
+                }
+            }
+            /*
+    e.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    e.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+    e.setAttributeNS(null,"xmlns","http://www.w3.org/2000/svg");
+    e.setAttributeNS('http://www.w3.org/1999/xmlns',"xlink","            
+            */
+            if(attr.type=="JSXIdentifier") {
+                if(bRootSvg && attr.name == "xmlns") continue;
+                this.out("e.setAttributeNS(null,");
+                this.walk(node.attributes[i],ctx);
+                this.out(");",true);                
+            } else {
+                if(attr.type=="JSXNamespacedName") {
+                    /*
+      this.out("\"");
+      this.out(node.name.name);
+      this.out("\"");
+      if(ctx._fnCall) {
+        this.out(":");
+      } else {
+        this.out(",");
+      }
+      this.walk(node.value,ctx);                    
+                    */
+                    if(bRootSvg && attr.name.name == "xlink") continue;
+                    if(bRootSvg) {
+                        
+                        this.out('e.setAttribute("'+attr.namespace.name+':'+attr.name.name+'",');
+                        // "http://www.w3.org/1999/xlink");',true);
+                        this.walk(node.attributes[i].value,ctx);
+                        this.out(");",true);                        
+                    } else {
+                        this.out("e.setAttributeNS('http://www.w3.org/1999/"+attr.namespace.name+"',");
+                        this.out("\"");
+                        this.out(attr.name.name);
+                        this.out("\"");
+                        this.out(",");
+                        this.walk(node.attributes[i].value,ctx);
+                        this.out(");",true);
+                    }
+                }
+            }
+            /*
+                if(n=="xlink:href") {
+                    me._dom.setAttributeNS('http://www.w3.org/1999/xlink', 'href', val);      
+                 } else {
+                    host._attributes[n] = val;
+                    me._dom.setAttributeNS(null, n,val);
+                 }            
+            */
+          }
+      } else {
+        // this.out("null");
+      }                       
+    } else {
+        this.out("var self = function(){this.parent=me;};");
+        this.out("self.prototype = this;",true);
+        this.out("e = " + elemName + ".apply(new self(),[");
+        var prevFnState = ctx._fnCall;
+        ctx._fnCall = true;
+        if (node.attributes && node.attributes.length) {
+          this.out("{", true);
+          this.indent(1);
+          for (var i = 0; i < node.attributes.length; i++) {
+            if (i > 0) this.out(",", true);
+            this.walk(node.attributes[i], ctx);
+          }
+          this.indent(-1);
+          this.out("}");
+        }
+        ctx._fnCall = prevFnState;
+        this.out("]);", true);          
+    }
+
+    if(node.selfClosing) {
+        this.out("return e;");
+        this.indent(-1);
+        this.out("}).apply(this,[])",true);
+
+    } else {
+
+    }
+ }        
+ _myTrait_.SVGLiteral = function(node,ctx) {
+    if(typeof(node.value)=="string") {
+      this.out("\"");
+      this.out(node.value.split("\n").join("\\n"));
+      // this.out(node.value);
+      this.out("\"");
+    } else {
+      this.out(node.value);
+    }
+ }
+ _myTrait_.SVGJSXExpressionContainer = function(node,ctx) {
+    this.walk(node.expression, ctx);
+ }
+ _myTrait_.SVGJSXElement = function(node,ctx) {
+    var inJsx = ctx._inJSX;
+    ctx._inJSX = true;
+    var bExpr = false;
+    this.walk(node.openingElement, ctx);
+    var cnt=0;
+    if(node.children) {
+
+        for(var i=0; i<node.children.length;i++) {
+          var child = node.children[i];
+          if(child.type=="JSXElement") {
+              this.out("e.appendChild(");
+              this.indent(1);
+              this.walk(child,ctx);
+              this.indent(-1);
+              this.out(")",true);
+          }    
+          if(child.type=="Literal") {
+              var value = child.value;
+              if(typeof(value)=="string") {
+                  var lines = value.split("\n");
+                  var str = lines.join("\\n");
+                  this.out("e.appendChild(document.createTextNode(\""+str+"\"));",true);
+              } else {
+                  this.out("e.appendChild(document.createTextNode(");
+                  this.walk(child,ctx);
+                  this.out("))",true);
+              }
+          }
+          if(child.type=="JSXExpressionContainer") {
+              if(!bExpr) {
+                this.out("var expr=")
+                this.walk(child, ctx);
+                this.out(";",true);
+              }
+              this.out("if(typeof(expr)=='string' || typeof(expr)=='number') {",true);
+                  this.indent(1);
+                  this.out("e.appendChild(document.createTextNode(expr));",true);
+                  this.indent(-1);
+              this.out("} else {");
+              this.indent(1);
+                this.out("if(expr instanceof Array) {",true);
+                this.indent(1);
+                this.out('expr.forEach(function(ee){e.appendChild(ee)});',true)
+                this.indent(-1);
+                this.out("} else { ",true);              
+                this.out("if(typeof(expr)=='object')",true);
+                  this.indent(1);
+                  this.out("e.appendChild(expr);",true);
+                  this.indent(-1);
+                this.out("}",true);                               
+
+                  
+              this.indent(-1);
+              this.out("}");                              
+                            
+          }
+        }
+    }
+    this.walk(node.closingElement, ctx);
+    // if(!inJsx) this.out(";", true);
+    ctx._inJSX = inJsx;
+ }                          
+ _myTrait_.SVGJSXClosingElement = function(node,ctx) {
+    this.out("return e;",true);
+    this.indent(-1);
+    this.out("}).apply(this,[])",true);
  }
 ```
 
@@ -1848,6 +2148,8 @@ this.indent(-1*indent);
 
 if(cnt==0) this._undoOutput=true;
 
+if(!ctx._forVar) this.out(";",true);
+
 
 ```
 
@@ -1946,12 +2248,31 @@ if(node instanceof Array) {
                     bDidEnterNs = true;
                 } else {
                     if(!ctx.ns) {
-                        var nameSpace = "DOM"; // <- default namespace, could be a setting though
+                        
+                        var nameSpace = this._options.defaultNamespace || "DOM"; // <- default namespace, could be a setting though
+                        var nName = node.openingElement.name.name;
+                        if(nName == "svg") nameSpace = "SVG";
+                        
+                        if(this._autoNs && this._autoNs[nName]) nameSpace = this._autoNs[nName];
+                        
+                        if(this._options.forceNamespace) nameSpace = this._options.forceNamespace;
                         if(!ctx.nsStack) ctx.nsStack = [];
                         ctx.nsStack.push(nameSpace);
                         old_ns = ctx.ns;
                         ctx.ns = nameSpace;
                         bDidEnterNs = true;  
+                    } else {
+                        if(ctx.ns=="DOM") {
+                            if(node.openingElement.name.name == "svg") {
+                                // 
+                                var nameSpace = "SVG";
+                                if(!ctx.nsStack) ctx.nsStack = [];
+                                ctx.nsStack.push(nameSpace);
+                                old_ns = ctx.ns;
+                                ctx.ns = nameSpace;
+                                bDidEnterNs = true;                                 
+                            }
+                        }
                     }
                 }
             }
