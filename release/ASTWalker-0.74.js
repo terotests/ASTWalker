@@ -1116,18 +1116,22 @@
           this.out("var e,me=this;", true);
 
           var elemName,
+              objName,
               bRootSvg = false;
           if (node.name.type == "JSXMemberExpression") {
             var obj = node.name;
             if (obj.object.name == ctx.ns) {
               elemName = obj.property.name;
-            } else {}
+            } else {
+              elemName = obj.property.name;
+              objName = obj.object.name;
+            }
           } else {
             elemName = node.name.name;
           }
 
           // Allowed elem names etc...
-          if (_elemNamesList.indexOf(elemName) >= 0) {
+          if (!objName && _elemNamesList.indexOf(elemName) >= 0) {
             if (elemName == "svg") {
               this.out("e=document.createElementNS('http://www.w3.org/2000/svg', 'svg');", true);
               this.out("e.setAttribute(\"xmlns\", \"http://www.w3.org/2000/svg\");", true);
@@ -1206,7 +1210,11 @@
           } else {
             this.out("var self = function(){this.parent=me;};");
             this.out("self.prototype = this;", true);
-            this.out("e = " + elemName + ".apply(new self(),[");
+            if (objName) {
+              this.out("e = " + objName + "." + elemName + ".apply(new self(),[");
+            } else {
+              this.out("e = " + elemName + ".apply(new self(),[");
+            }
             var prevFnState = ctx._fnCall;
             ctx._fnCall = true;
             if (node.attributes && node.attributes.length) {
@@ -2348,8 +2356,6 @@
 }).call(new Function("return this")());
 
 // this.out("null");
-
-// console.error("JSXMemberExpression not currently supported at react Namepace");
 
 // console.error("JSXMemberExpression not currently supported at react Namepace");
 
