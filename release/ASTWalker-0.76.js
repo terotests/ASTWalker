@@ -2364,6 +2364,12 @@
         walker.startWalk(rawAST, walker.createContext());
         var strCode = walker.getCode();
         eval(strCode);
+        var outId = list[i].getAttribute("output");
+        if (outId) {
+          var out = document.querySelector(outId);
+          out.textContent = strCode;
+          out.value = strCode;
+        }
       }
     }
   }, 1);
