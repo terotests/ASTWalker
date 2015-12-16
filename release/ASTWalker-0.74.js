@@ -812,6 +812,8 @@
 
         this._options = options || {};
 
+        this._nsList = ["react", "DOM", "SVG"];
+
         this.initReactNamespace();
         this.initDOMNamespace();
         this.initSVGNamespace();
@@ -2117,11 +2119,13 @@
                   // could be entering a namespace
                   var member = node.openingElement.name;
                   var nameSpace = member.object.name;
-                  if (!ctx.nsStack) ctx.nsStack = [];
-                  ctx.nsStack.push(nameSpace);
-                  old_ns = ctx.ns;
-                  ctx.ns = nameSpace;
-                  bDidEnterNs = true;
+                  if (this._nsList.indexOf(nameSpace) >= 0) {
+                    if (!ctx.nsStack) ctx.nsStack = [];
+                    ctx.nsStack.push(nameSpace);
+                    old_ns = ctx.ns;
+                    ctx.ns = nameSpace;
+                    bDidEnterNs = true;
+                  }
                 } else {
                   if (!ctx.ns) {
 
