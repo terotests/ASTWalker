@@ -942,7 +942,7 @@
               }
             } else {}
           } else {
-            this.out("var el=$$o(this)");
+            this.out("var el=$$o(this);", true);
             //this.out("var self = function(){this.parent=me;};");
             //this.out("self.prototype = this;",true);
             if (objName) {
