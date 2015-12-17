@@ -1114,6 +1114,12 @@
                 if (attrName && attrName.substring(0, 2) == "on") {
                   var eventName = attrName.slice(2).toLowerCase();
                   // e.addEventListener('click', function(){me['click']("ok")});return e;}).apply(this,[])
+                  this.trigger("JSXEventListener", {
+                    event: eventName,
+                    fn: attrName,
+                    node: node,
+                    ctx: ctx
+                  });
                   this.out("e.addEventListener('" + eventName + "', function(){me['" + attrName + "'](");
                   this.walk(node.attributes[i].value, ctx);
                   this.out(")});", true);
@@ -1132,6 +1138,12 @@
             } else {
               this.out("e = " + elemName + ".apply(new self(),[");
             }
+            this.trigger("JSXCustomElement", {
+              obj: objName,
+              elem: elemName,
+              node: node,
+              ctx: ctx
+            });
             var prevFnState = ctx._fnCall;
             ctx._fnCall = true;
             if (node.attributes && node.attributes.length) {
