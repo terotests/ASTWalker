@@ -1117,7 +1117,8 @@
                   this.trigger("JSXEventListener", {
                     event: eventName,
                     fn: attrName,
-                    node: node,
+                    elemNode: node,
+                    node: node.attributes[i],
                     ctx: ctx
                   });
                   this.out("e.addEventListener('" + eventName + "', function(){me['" + attrName + "'](");
