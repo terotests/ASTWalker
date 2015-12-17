@@ -2599,7 +2599,7 @@
         });
 
         var walker = ASTWalker({
-          defaultNamespace: "DOMC"
+          defaultNamespace: "DOM"
         });
         walker.startWalk(rawAST, walker.createContext());
         var strCode = walker.getCode();
