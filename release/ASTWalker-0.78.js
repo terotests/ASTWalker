@@ -857,6 +857,19 @@
           this.out("function $$t(e,s){", true);
           this.out("e.appendChild(document.createTextNode(s));", true);
           this.out("}", true);
+
+          //       this.out("e=$$e('"+elemName+"');",true);
+          // this.out("e=document.createElement('"+elemName+"');",true);
+          this.out("function $$e(e){", true);
+          this.out("return document.createElement(e);", true);
+          this.out("}", true);
+
+          // this.out("var el=$$o(this)");
+          this.out("function $$o(me){", true);
+          this.out("var fn = function(){this.parent=me;};");
+          this.out("fn.prototype = me;", true);
+          this.out("return fn;", true);
+          this.out("}", true);
         }
       };
 
@@ -910,7 +923,8 @@
 
           // Allowed elem names etc...
           if (!objName && _elemNamesList.indexOf(elemName) >= 0) {
-            this.out("e=document.createElement('" + elemName + "');", true);
+            this.out("e=$$e('" + elemName + "');", true);
+            // this.out("e=document.createElement('"+elemName+"');",true);
 
             if (node.attributes && node.attributes.length) {
               for (var i = 0; i < node.attributes.length; i++) {
@@ -928,12 +942,13 @@
               }
             } else {}
           } else {
-            this.out("var self = function(){this.parent=me;};");
-            this.out("self.prototype = this;", true);
+            this.out("var el=$$o(this)");
+            //this.out("var self = function(){this.parent=me;};");
+            //this.out("self.prototype = this;",true);
             if (objName) {
-              this.out("e = " + objName + "." + elemName + ".apply(new self(),[");
+              this.out("e = " + objName + "." + elemName + ".apply(new el(),[");
             } else {
-              this.out("e = " + elemName + ".apply(new self(),[");
+              this.out("e = " + elemName + ".apply(new el(),[");
             }
             var prevFnState = ctx._fnCall;
             ctx._fnCall = true;
