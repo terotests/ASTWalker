@@ -816,6 +816,7 @@
 
         this.initReactNamespace();
         this.initDOMNamespace();
+        this.initDOMCNamespace();
         this.initSVGNamespace();
       });
 
