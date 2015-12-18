@@ -2622,6 +2622,7 @@
           var out = document.querySelector(outId);
           out.textContent = strCode;
           out.value = strCode;
+          console.log("COMPILED SIZE : ", strCode.length);
         }
       }
     }
