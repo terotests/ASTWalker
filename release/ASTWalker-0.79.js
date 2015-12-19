@@ -126,15 +126,38 @@
        */
       _myTrait_.ArrowFunctionExpression = function (node, ctx) {
 
+        if (this._options.toES5) {
+          this.out("function");
+          if (node.generator) {
+            this.out("* ");
+          }
+          var me = this;
+          this.out("(");
+          var cnt = 0;
+          node.params.forEach(function (p) {
+            if (cnt++ > 0) me.out(",");
+            me.walk(p, ctx);
+            if (node.defaults && node.defaults[cnt - 1]) {
+              var defP = node.defaults[cnt - 1];
+              me.out("=");
+              me.walk(defP, ctx);
+            }
+          });
+          this.out(")");
+          me.trigger("FunctionBody", node.body);
+          if (node.body[0].type != "BlockStatement") this.out("{ return ");
+          this.walk(node.body, ctx);
+          if (node.body[0].type != "BlockStatement") this.out("}");
+          this.out(".bind(this)");
+          return;
+        }
         this.out("function");
-
         if (node.generator) {
           this.trigger("FunctionGenerator", node);
           this.out("* ");
         }
 
         if (node.id && node.id.name) {
-          console.log("ERROR: ArrowFunctionExpression should not have name");
           this.trigger("FunctionName", node);
           this.out(" " + node.id.name + " ");
         } else {
