@@ -145,9 +145,9 @@
           });
           this.out(")");
           me.trigger("FunctionBody", node.body);
-          if (node.body[0].type != "BlockStatement") this.out("{ return ");
+          if (node.body.type != "BlockStatement") this.out("{ return ");
           this.walk(node.body, ctx);
-          if (node.body[0].type != "BlockStatement") this.out("}");
+          if (node.body.type != "BlockStatement") this.out("}");
           this.out(".bind(this)");
           return;
         }
