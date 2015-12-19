@@ -2626,7 +2626,7 @@
           // top-level errors array
           tolerant: true,
           // specify the language version (3, 5, or 6, default is 5)
-          ecmaVersion: 5,
+          ecmaVersion: 6,
           // specify which type of script you're parsing (script or module, default is script)
           sourceType: "script",
           // specify additional language features
@@ -2641,7 +2641,8 @@
         });
 
         var walker = ASTWalker({
-          defaultNamespace: "DOM"
+          defaultNamespace: "DOM",
+          toES5: true
         });
         walker.startWalk(rawAST, walker.createContext());
         var strCode = walker.getCode();
