@@ -962,7 +962,7 @@
                   var eventName = attrName.slice(2).toLowerCase();
                   this.out("e.addEventListener('" + eventName + "', function(){me['" + attrName + "'](");
                   this.walk(node.attributes[i].value, ctx);
-                  this.out(")});", true);
+                  this.out(")}.bind(this));", true);
                   continue;
                 }
                 this.out("e.setAttribute(");
@@ -1154,7 +1154,7 @@
                       node: node.attributes[i],
                       ctx: ctx
                     });
-                    this.out("e.addEventListener('" + eventName + "', function(){");
+                    this.out("e.addEventListener('" + eventName + "', function(event){");
                     this.walk(valueNode.expression, ctx);
                     this.out("}.bind(this));", true);
                   } else {
@@ -1165,7 +1165,7 @@
                       node: node.attributes[i],
                       ctx: ctx
                     });
-                    this.out("e.addEventListener('" + eventName + "', function(){me['" + attrName + "'](");
+                    this.out("e.addEventListener('" + eventName + "', function(event){me['" + attrName + "'](");
                     this.walk(node.attributes[i].value, ctx);
                     this.out(")});", true);
                   }
