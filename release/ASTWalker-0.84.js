@@ -1219,7 +1219,11 @@
             // this.out(node.value);
             this.out("\"");
           } else {
-            this.out(node.value);
+            if (typeof node.raw != "undefined") {
+              this.out(node.raw);
+            } else {
+              this.out(node.value);
+            }
           }
         };
         _myTrait_.DOMJSXExpressionContainer = function (node, ctx) {
