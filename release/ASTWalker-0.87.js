@@ -1183,7 +1183,7 @@
             } else {}
           } else {
             // remove the "parent"
-            this.out("var self = function(){};");
+            this.out("var self = function(){ this._parent = me;};");
             this.out("self.prototype = this;", true);
             if (objName) {
               this.out("e = " + objName + "." + elemName + ".apply(new self(),[");
