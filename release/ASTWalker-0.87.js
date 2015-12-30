@@ -2634,7 +2634,7 @@
     if (typeof espree != "undefined") {
       var list = document.querySelectorAll("script[type=\"text/ASTWalker\"]");
       for (var i = 0; i < list.length; i++) {
-        var codeStr = list[i].text;
+        var codeStr = list[i].text || list[i].textContent;
         console.log("Code ", codeStr);
         if (!codeStr) continue;
         var rawAST = espree.parse(codeStr, {
