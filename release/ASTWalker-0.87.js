@@ -2682,7 +2682,7 @@
         }
       }
     }
-  }, 1);
+  }, 300);
 }).call(new Function("return this")());
 
 // this.out("null");
