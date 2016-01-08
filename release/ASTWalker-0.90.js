@@ -1520,7 +1520,6 @@
                 }
                 this.out("if(typeof(expr)=='string' || typeof(expr)=='number') {", true);
                 this.indent(1);
-                thie.out("new frzr.View({el : document.create})");
                 this.out("e.addChild( new frzr.View({el:document.createTextNode(expr)))", true);
                 this.indent(-1);
                 this.out("} else {");
