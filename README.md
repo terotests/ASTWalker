@@ -79,6 +79,7 @@ General information on the subject
 - [initDOMC](README.md#ASTWalker_initDOMC)
 - [initDOMCNamespace](README.md#ASTWalker_initDOMCNamespace)
 - [initDOMNamespace](README.md#ASTWalker_initDOMNamespace)
+- [initFRZRNamespace](README.md#ASTWalker_initFRZRNamespace)
 - [initReactNamespace](README.md#ASTWalker_initReactNamespace)
 - [initSVGNamespace](README.md#ASTWalker_initSVGNamespace)
 - [JSXAttribute](README.md#ASTWalker_JSXAttribute)
@@ -918,7 +919,7 @@ if(this._indent<0) this._indent = 0;
 ```
 
 ### ASTWalker::constructor( options )
-Walks the AST tree, creates events on walk steps
+Walks the AST tree, creates events on walk steps. Options : defaultNamespace, forceNamespace.
 ```javascript
 
 this._structures = [];
@@ -937,12 +938,13 @@ if(options && !options.toES5) {
     this._options.toES5 = true;
 }
 
-this._nsList = ["react", "DOM", "SVG"];
+this._nsList = ["react", "DOM", "SVG", "FRZR"];
 
 this.initReactNamespace();
 this.initDOMNamespace();
 this.initDOMCNamespace();
 this.initSVGNamespace();
+this.initFRZRNamespace();
 ```
         
 ### <a name="ASTWalker_initDOMC"></a>ASTWalker::initDOMC(t)
@@ -1069,7 +1071,7 @@ _myTrait_.DOMCJSXAttribute = function(node, ctx) {
                 var eventName = attrName.slice(2).toLowerCase();
                 this.out("e.addEventListener('"+eventName+"', function(){me['"+attrName+"'](");
                 this.walk(node.attributes[i].value,ctx);
-                this.out(")});",true); 
+                this.out(")}.bind(this));",true); 
                 continue;
             }
             this.out("e.setAttribute(");
@@ -1234,7 +1236,11 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
       } else {
         this.out(",");
       }
-      this.walk(node.value,ctx);
+      if(node.value===null) {
+        this.out("null");  
+      } else {
+        this.walk(node.value,ctx);
+      }
  }
 
  _myTrait_.DOMJSXOpeningElement = function(node,ctx) {
@@ -1271,14 +1277,15 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
                 
                 var valueNode = node.attributes[i].value;
                 
-                if(valueNode.type=="JSXExpressionContainer" && valueNode.expression.type=="CallExpression") {
+                // && valueNode.expression.type=="CallExpression"
+                if(valueNode.type=="JSXExpressionContainer" ) {
                     this.trigger("JSXEventListener", { event : eventName, fn : attrName, elemNode : node, node: node.attributes[i], ctx : ctx });
-                    this.out("e.addEventListener('"+eventName+"', function(){");
+                    this.out("e.addEventListener('"+eventName+"', function(event){");
                     this.walk(valueNode.expression,ctx);
                     this.out("}.bind(this));",true);                     
                 } else {
                     this.trigger("JSXEventListener", { event : eventName, fn : attrName, elemNode : node, node: node.attributes[i], ctx : ctx });
-                    this.out("e.addEventListener('"+eventName+"', function(){me['"+attrName+"'](");
+                    this.out("e.addEventListener('"+eventName+"', function(event){me['"+attrName+"'](");
                     this.walk(node.attributes[i].value,ctx);
                     this.out(")});",true); 
                 }
@@ -1292,7 +1299,8 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
         // this.out("null");
       }                       
     } else {
-        this.out("var self = function(){this.parent=me;};");
+        // remove the "parent"
+        this.out("var self = function(){ this._parent = me;};");
         this.out("self.prototype = this;",true);
         if(objName) {
             this.out("e = " + objName+"."+elemName + ".apply(new self(),[");
@@ -1332,7 +1340,11 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
       // this.out(node.value);
       this.out("\"");
     } else {
-      this.out(node.value);
+      if(typeof(node.raw)!="undefined") {
+          this.out(node.raw);
+      } else {
+          this.out(node.value);
+      }
     }
  }
  _myTrait_.DOMJSXExpressionContainer = function(node,ctx) {
@@ -1402,6 +1414,266 @@ _myTrait_.DOMJSXAttribute = function(node, ctx) {
     ctx._inJSX = inJsx;
  }                          
  _myTrait_.DOMJSXClosingElement = function(node,ctx) {
+    this.out("return e;",true);
+    this.indent(-1);
+    this.out("}).apply(this,[])",true);
+ }
+```
+
+### <a name="ASTWalker_initFRZRNamespace"></a>ASTWalker::initFRZRNamespace(t)
+
+
+```javascript
+
+// tags that will be converted to DOM element access
+var _elemNamesList = ["a", "abbr", "acronym","address","applet","area","article","aside","audio",
+"b","base","basefont","bdi","bdo","big","blockquote","body","br","button","canvas",
+"caption","center","cite","code","col","colgroup","datalist","dd","del","details",
+"dfn","dialog","dir","div","dl","dt","em","embed","fieldset","figcaption","figure","font",
+"footer","form","frame","frameset","h1","h2","h3","h4","h5","h6","head","header","hgroup",
+"hr","html","i","iframe","img","input","ins","kbd","keygen","label","legend","li","link",
+"main","map","mark","menu","menuitem","meta","meter","nav","noframes","noscript","object",
+"ol","optgroup","option","output","p","param","pre","progress","q","rp","rt","ruby",
+"s","sampe","script","section","select","small","source","span","strike","strong","style",
+"sub","summary","sup","table","tbody","td","textarea","tfoot","th","thead","time","title",
+"tr","track","tt","u","ul","var","video","wbr"];
+
+ // _fnCall indicates the result is a key-value of an object expression
+_myTrait_.FRZRJSXAttribute = function(node, ctx) {
+      this.out("\"");
+      if(node.name.type=="JSXNamespacedName") {
+        this.out(node.name.namespace.name);   
+        this.out(":");
+        this.out(node.name.name.name);  
+      } else {
+        this.out(node.name.name);
+      }
+      this.out("\"");
+      if(ctx._fnCall) {
+        this.out(":");
+      } else {
+        this.out(",");
+      }
+      if(node.value===null) {
+        this.out("null");  
+      } else {
+        this.walk(node.value,ctx);
+      }
+ }
+
+ _myTrait_.FRZRJSXOpeningElement = function(node,ctx) {
+    
+    this.out("(function() { ",true);
+    this.indent(1);
+    this.out("var e,me=this;",true);
+    
+    var elemName, objName;
+    if(node.name.type=="JSXMemberExpression") {
+        var obj = node.name;
+        if(obj.object.name == ctx.ns) {
+            elemName = obj.property.name;
+        } else {
+            elemName = obj.property.name;
+            objName = obj.object.name;
+            // console.error("JSXMemberExpression not currently supported at react Namepace");
+        }
+    } else {                        
+        elemName = node.name.name;
+    }
+
+
+    // Allowed elem names etc...
+    if(!objName && _elemNamesList.indexOf(elemName)>=0) {
+      this.out("e = new frzr.View({el:'"+elemName+"'",false);
+      
+      // -- set attributes
+      // if (i > 0) this.out(",", true);
+
+      // -- update
+      ctx._fnCall = true;
+      var bHasAttrs = false;
+      if(node.attributes && node.attributes.length) {
+          bHasAttrs = true;
+          this.indent(2);
+          var _updFn;
+          for(var i=0; i<node.attributes.length;i++) {
+            var attrName = node.attributes[i].name.name;
+            if(attrName && attrName.substring(0,2)=="on") {
+                continue;
+            }
+            if(attrName =="update") {
+                _updFn = node.attributes[i];
+                continue;
+            }            
+            this.out(",", true);
+            this.walk(node.attributes[i],ctx);
+          }          
+          if(_updFn) {
+            this.out(",", true);
+            this.walk(_updFn,ctx);              
+          }
+          this.indent(-2);
+      } else {
+        // this.out("null");
+      }            
+      ctx._fnCall = false;
+      this.out("});",true);
+      
+      if(bHasAttrs) {
+          for(var i=0; i<node.attributes.length;i++) {
+            var attrName = node.attributes[i].name.name;
+            if(attrName && attrName.substring(0,2)=="on") {
+                var eventName = attrName.slice(2).toLowerCase();
+    
+                var valueNode = node.attributes[i].value;
+                
+                // && valueNode.expression.type=="CallExpression"
+                if(valueNode.type=="JSXExpressionContainer" ) {
+                    this.out("e.addListener('"+eventName+"', function(event){");
+                    this.walk(valueNode.expression,ctx);
+                    this.out("}.bind(this));",true);                     
+                } else {
+                    this.out("e.addListener('"+eventName+"', function(event){me['"+attrName+"'](");
+                    this.walk(node.attributes[i].value,ctx);
+                    this.out(")});",true); 
+                }
+                continue;
+            }
+          }      
+      }
+    } else {
+        // remove the "parent"
+        this.out("var self = function(){ this._parent = me;};");
+        this.out("self.prototype = this;",true);
+        if(objName) {
+            this.out("e = " + objName+"."+elemName + ".apply(new self(),[");
+        } else {
+            this.out("e = " + elemName + ".apply(new self(),[");
+        }
+        this.trigger("JSXCustomElement", { obj : objName, elem : elemName, node: node, ctx : ctx });
+        var prevFnState = ctx._fnCall;
+        ctx._fnCall = true;
+        if (node.attributes && node.attributes.length) {
+          this.out("{", true);
+          this.indent(1);
+          for (var i = 0; i < node.attributes.length; i++) {
+            if (i > 0) this.out(",", true);
+            this.walk(node.attributes[i], ctx);
+          }
+          this.indent(-1);
+          this.out("}");
+        }
+        ctx._fnCall = prevFnState;
+        this.out("]);", true);          
+    }
+
+    if(node.selfClosing) {
+        this.out("return e;");
+        this.indent(-1);
+        this.out("}).apply(this,[])",true);
+
+    } else {
+
+    }
+ }        
+ _myTrait_.FRZRLiteral = function(node,ctx) {
+    if(typeof(node.value)=="string") {
+      this.out("\"");
+      this.out(node.value.split("\n").join("\\n"));
+      this.out("\"");
+    } else {
+      if(typeof(node.raw)!="undefined") {
+          this.out(node.raw);
+      } else {
+          this.out(node.value);
+      }
+    }
+ }
+ _myTrait_.FRZRJSXExpressionContainer = function(node,ctx) {
+    this.walk(node.expression, ctx);
+ }
+ _myTrait_.FRZRJSXElement = function(node,ctx) {
+    var inJsx = ctx._inJSX;
+    ctx._inJSX = true;
+    var bExpr = false;
+    this.walk(node.openingElement, ctx);
+    var cnt=0;
+    if(node.children) {
+
+        for(var i=0; i<node.children.length;i++) {
+          var child = node.children[i];
+          if(child.type=="JSXElement") {
+              this.out("e.addChild(");
+              this.indent(1);
+              this.walk(child,ctx);
+              this.indent(-1);
+              this.out(")",true);
+          }
+/*
+                  this.out("e.appendChild(document.createTextNode(\""+str+"\"));",true);
+              } else {
+                  this.out("e.appendChild(document.createTextNode(");
+                  this.walk(child,ctx);
+                  this.out("))",true);
+              }
+          }
+          if(child.type=="JSXExpressionContainer") {
+              if(!bExpr) {
+                this.out("var expr=")
+                this.walk(child, ctx);
+                this.out(";",true);
+              }
+              this.out("if(typeof(expr)=='string' || typeof(expr)=='number') {",true);
+                  this.indent(1);
+                  this.out("e.appendChild(document.createTextNode(expr));",true);
+*/
+          if(child.type=="Literal") {
+              var value = child.value;
+              if(typeof(value)=="string") {
+                  var lines = value.split("\n");
+                  var str = lines.join("\\n");
+                  this.out("e.addChild( new frzr.View({el:document.createTextNode(\""+str+"\")}))",true);
+              } else {
+                  this.out("e.addChild( new frzr.View({el:document.createTextNode(");
+                  this.walk(child,ctx);
+                  this.out(")}))",true);
+              }
+          }
+          if(child.type=="JSXExpressionContainer") {
+              if(!bExpr) {
+                this.out("var expr=")
+                this.walk(child, ctx);
+                this.out(";",true);
+              }
+              this.out("if(typeof(expr)=='string' || typeof(expr)=='number') {",true);
+                  this.indent(1);
+                  this.out("e.addChild( new frzr.View({el:document.createTextNode(expr)}))",true);
+                  this.indent(-1);
+              this.out("} else {");
+              this.indent(1);
+                this.out("if(expr instanceof Array) {",true);
+                this.indent(1);
+                this.out('expr.forEach(function(ee){e.addChild(ee)});',true)
+                this.indent(-1);
+                this.out("} else { ",true);              
+                this.out("if(typeof(expr)=='object')",true);
+                  this.indent(1);
+                  this.out("e.addChild(expr);",true);
+                  this.indent(-1);
+                this.out("}",true);                               
+
+                  
+              this.indent(-1);
+              this.out("}");                              
+                            
+          }
+        }
+    }
+    this.walk(node.closingElement, ctx);
+    // if(!inJsx) this.out(";", true);
+    ctx._inJSX = inJsx;
+ }                          
+ _myTrait_.FRZRJSXClosingElement = function(node,ctx) {
     this.out("return e;",true);
     this.indent(-1);
     this.out("}).apply(this,[])",true);
