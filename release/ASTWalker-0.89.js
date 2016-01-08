@@ -1482,16 +1482,34 @@
                 this.indent(-1);
                 this.out(")", true);
               }
+              /*
+                  this.out("e.appendChild(document.createTextNode(\""+str+"\"));",true);
+              } else {
+                  this.out("e.appendChild(document.createTextNode(");
+                  this.walk(child,ctx);
+                  this.out("))",true);
+              }
+              }
+              if(child.type=="JSXExpressionContainer") {
+              if(!bExpr) {
+                this.out("var expr=")
+                this.walk(child, ctx);
+                this.out(";",true);
+              }
+              this.out("if(typeof(expr)=='string' || typeof(expr)=='number') {",true);
+                  this.indent(1);
+                  this.out("e.appendChild(document.createTextNode(expr));",true);
+              */
               if (child.type == "Literal") {
                 var value = child.value;
                 if (typeof value == "string") {
                   var lines = value.split("\n");
                   var str = lines.join("\\n");
-                  this.out("e.setText(\"" + str + "\");", true);
+                  this.out("e.addChild( new frzr.View({el:document.createTextNode(\"" + str + "\")}))", true);
                 } else {
-                  this.out("e.setText(");
+                  this.out("e.addChild( new frzr.View({el:document.createTextNode(");
                   this.walk(child, ctx);
-                  this.out(")", true);
+                  this.out(")}))", true);
                 }
               }
               if (child.type == "JSXExpressionContainer") {
@@ -1502,7 +1520,8 @@
                 }
                 this.out("if(typeof(expr)=='string' || typeof(expr)=='number') {", true);
                 this.indent(1);
-                this.out("e.setText(expr);", true);
+                thie.out("new frzr.View({el : document.create})");
+                this.out("e.addChild( new frzr.View({el:document.createTextNode(expr)))", true);
                 this.indent(-1);
                 this.out("} else {");
                 this.indent(1);
