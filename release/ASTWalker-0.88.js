@@ -2860,7 +2860,8 @@
     if (typeof espree != "undefined") {
       var list = document.querySelectorAll("script[type=\"text/ASTWalker\"]");
       for (var i = 0; i < list.length; i++) {
-        var codeStr = list[i].text || list[i].textContent;
+        var scriptElem = list[i];
+        var codeStr = scriptElem.text || scriptElem.textContent;
         if (!codeStr) continue;
         var rawAST = espree.parse(codeStr, {
           // attach range information to each node
@@ -2891,9 +2892,12 @@
             experimentalObjectRestSpread: true
           }
         });
-
+        var ns = "DOM";
+        if (scriptElem.getAttribute("ns")) {
+          ns = scriptElem.getAttribute("ns");
+        }
         var walker = ASTWalker({
-          defaultNamespace: "DOM",
+          defaultNamespace: ns,
           toES5: true
         });
         walker.startWalk(rawAST, walker.createContext());
