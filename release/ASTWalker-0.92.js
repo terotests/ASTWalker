@@ -1182,7 +1182,7 @@
                   var valueNode = node.attributes[i].value;
 
                   // && valueNode.expression.type=="CallExpression"
-                  if (valueNode.type == "JSXExpressionContainer") {
+                  if (valueNode && valueNode.type == "JSXExpressionContainer") {
                     this.out("this." + fName + "(e,");
                     this.walk(valueNode.expression, ctx);
                     this.out(");", true);
@@ -1198,7 +1198,7 @@
                   var valueNode = node.attributes[i].value;
 
                   // && valueNode.expression.type=="CallExpression"
-                  if (valueNode.type == "JSXExpressionContainer") {
+                  if (valueNode && valueNode.type == "JSXExpressionContainer") {
                     this.out(fName + "(e,");
                     this.walk(valueNode.expression, ctx);
                     this.out(");", true);
