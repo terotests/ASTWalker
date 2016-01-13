@@ -1199,13 +1199,13 @@
 
                   // && valueNode.expression.type=="CallExpression"
                   if (valueNode && valueNode.type == "JSXExpressionContainer") {
-                    this.out(fName + "(e,");
+                    this.out(fName + ".apply(this, [e,");
                     this.walk(valueNode.expression, ctx);
-                    this.out(");", true);
+                    this.out("]);", true);
                   } else {
-                    this.out(fName + "(e,");
+                    this.out(fName + ".apply(this,[e,");
                     this.walk(node.attributes[i].value, ctx);
-                    this.out(");", true);
+                    this.out("]);", true);
                   }
                   continue;
                 }
