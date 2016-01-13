@@ -1177,8 +1177,8 @@
                   }
                   continue;
                 }
-                if (attrName && attrName.substring(0, 1) == "this_") {
-                  var fName = attrName.slice(1).toLowerCase();
+                if (attrName && attrName.substring(0, 5) == "this_") {
+                  var fName = attrName.slice(5).toLowerCase();
                   var valueNode = node.attributes[i].value;
 
                   // && valueNode.expression.type=="CallExpression"
