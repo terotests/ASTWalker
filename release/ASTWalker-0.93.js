@@ -1188,7 +1188,11 @@
                     this.out(");", true);
                   } else {
                     this.out("this." + fName + "(e,");
-                    this.walk(node.attributes[i].value, ctx);
+                    if (!node.attributes[i].value) {
+                      this.out("null");
+                    } else {
+                      this.walk(node.attributes[i].value, ctx);
+                    }
                     this.out(");", true);
                   }
                   continue;
@@ -1204,7 +1208,11 @@
                     this.out("]);", true);
                   } else {
                     this.out(fName + ".apply(this,[e,");
-                    this.walk(node.attributes[i].value, ctx);
+                    if (!node.attributes[i].value) {
+                      this.out("null");
+                    } else {
+                      this.walk(node.attributes[i].value, ctx);
+                    }
                     this.out("]);", true);
                   }
                   continue;
