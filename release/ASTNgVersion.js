@@ -1097,6 +1097,9 @@
 
         // _fnCall indicates the result is a key-value of an object expression
         _myTrait_.DOMJSXAttribute = function (node, ctx) {
+          if(ctx._fnAssignVars) {
+                this.out("__argv[");
+          } 
           this.out("\"");
           if (node.name.type == "JSXNamespacedName") {
             this.out(node.name.namespace.name);
@@ -1106,8 +1109,16 @@
             this.out(node.name.name);
           }
           this.out("\"");
+          if(ctx._fnAssignVars) {
+                this.out("]");
+          }           
           if (ctx._fnCall) {
-            this.out(":");
+            if(ctx._fnAssignVars) {
+                this.out("=");
+            } else {
+                this.out(":");
+            }
+            
           } else {
             this.out(",");
           }
@@ -1116,6 +1127,9 @@
           } else {
             this.walk(node.value, ctx);
           }
+          if(ctx._fnAssignVars) {
+                this.out(";", true);
+          }           
         };
 
         _myTrait_.DOMJSXOpeningElement = function (node, ctx) {
@@ -1138,12 +1152,25 @@
             elemName = node.name.name;
           }
 
+
+          if(this._noPredefinedComponents) console.log("Nothing predefined");
+
           // Allowed elem names etc...
-          if (!objName && _elemNamesList.indexOf(elemName) >= 0) {
+          if (!this._noPredefinedComponents && !objName && _elemNamesList.indexOf(elemName) >= 0) {
             this.out("e=document.createElement('" + elemName + "');", true);
 
             if (node.attributes && node.attributes.length) {
               for (var i = 0; i < node.attributes.length; i++) {
+                var a = node.attributes[i];
+                if(a.type=="JSXSpreadAttribute") {
+                  var fromParam = a.argument.name;
+                  this.out("Object.keys("+fromParam+").forEach(function(key){", true);
+                      this.indent(1);
+                      this.out("e.setAttribute(key, "+fromParam+"[key]);", true);
+                      this.indent(-1);
+                  this.out("});", true);
+                  continue;              
+                }
                 var attrName = node.attributes[i].name.name;
                 if (attrName && attrName.substring(0, 2) == "on") {
                   var eventName = attrName.slice(2).toLowerCase();
@@ -1160,9 +1187,16 @@
                       node: node.attributes[i],
                       ctx: ctx
                     });
-                    this.out("e.addEventListener('" + eventName + "', function(event){");
-                    this.walk(valueNode.expression, ctx);
-                    this.out("}.bind(this));", true);
+                    if(valueNode.expression.type=="CallExpression") {
+                      this.out("e.addEventListener('" + eventName + "', function(event){");
+                      this.walk(valueNode.expression, ctx);
+                      this.out("}.bind(this));", true);
+                    } else {
+                      this.out("e.addEventListener('" + eventName + "', ");
+                      this.walk(valueNode.expression, ctx);
+                      this.out(");", true);                     
+                    }
+
                   } else {
                     this.trigger("JSXEventListener", {
                       event: eventName,
@@ -1217,12 +1251,52 @@
           } else {
             // custom element
             // remove the "parent"
-            this.out("var self = function(){ this._parent = me;};");
+            this.out("var self = function(){ this._parent = me;};",true);
             this.out("self.prototype = this;", true);
+
+            var prevFnState = ctx._fnCall;
+            var prevAssignState = ctx._fnAssignVars;
+            ctx._fnCall = true;   
+            ctx._fnAssignVars = true;            
+
+            this.out("var __argv={};", true);
+            var had_attrs = false;
+            if (node.attributes && node.attributes.length) {
+              for (var i = 0; i < node.attributes.length; i++) {
+                var a = node.attributes[i];
+                if(a.type=="JSXSpreadAttribute") {
+                  
+                  var fromParam = a.argument.name;
+                  this.out("Object.keys("+fromParam+").forEach(function(key){", true);
+                      this.indent(1);
+                      this.out("if(key=='children') return;", true);
+                      this.out("if(typeof("+fromParam+"[key])!='string') return;", true);
+                      this.out("__argv[key]="+fromParam+"[key];", true);
+                      this.indent(-1);
+                  this.out("});", true);
+
+                  continue;              
+                }                  
+                // if (i > 0) this.out(",", true);
+                // this.out("__argv[key]="+fromParam+"[key];", true);
+                // console.log("Attribute ", a);
+                this.walk(node.attributes[i], ctx);
+                // }
+                
+                had_attrs = true;
+              }
+            }
+            // if(had_attrs) this.out(",", true);
+            this.out("__argv.children = ");
+            this.childNodesToArray( ctx.__openParent, ctx );
+            ctx.__custom = true;
+            this.indent(-1);
+            this.out(";", true);
+
             if (objName) {
-              this.out("e = " + objName + "." + elemName + ".apply(new self(),[");
+              this.out("e = " + objName + "." + elemName + ".apply(new self(),[__argv]);", true);
             } else {
-              this.out("e = " + elemName + ".apply(new self(),[");
+              this.out("e = " + (this._compNs ? this._compNs+"." : "")+elemName + ".apply(new self(),[__argv]);", true);
             }
             this.trigger("JSXCustomElement", {
               obj: objName,
@@ -1230,29 +1304,11 @@
               node: node,
               ctx: ctx
             });
-            var prevFnState = ctx._fnCall;
-            ctx._fnCall = true;
-            // childNodesToArray
-            
-              this.out("{", true);
-              this.indent(1);
-              var had_attrs = false;
-              if (node.attributes && node.attributes.length) {
-                for (var i = 0; i < node.attributes.length; i++) {
-                  if (i > 0) this.out(",", true);
-                  this.walk(node.attributes[i], ctx);
-                  had_attrs = true;
-                }
-              }
-              if(had_attrs) this.out(",", true);
-              this.out("children : ");
-              this.childNodesToArray( ctx.__openParent, ctx );
-              ctx.__custom = true;
-              this.indent(-1);
-              this.out("}");
             
             ctx._fnCall = prevFnState;
-            this.out("]);", true);
+            ctx._fnAssignVars = prevAssignState;
+
+            // this.out("]);", true);
           }
 
           if (node.selfClosing) {
@@ -1470,6 +1526,7 @@
               this.indent(2);
               var _updFn;
               for (var i = 0; i < node.attributes.length; i++) {
+                var a = node.attributes[i];
                 var attrName = node.attributes[i].name.name;
                 if (attrName && attrName.substring(0, 2) == "on") {
                   continue;
@@ -3022,6 +3079,10 @@
           defaultNamespace: ns,
           toES5: true
         });
+        
+        walker._compNs = scriptElem.getAttribute("component_ns");
+        walker._noPredefinedComponents = scriptElem.getAttribute("pure");
+
         walker.startWalk(rawAST, walker.createContext());
         var strCode = walker.getCode();
         eval(strCode);
@@ -3036,13 +3097,4 @@
     }
   }, 1);
 }).call(new Function("return this")());
-
-// this.out("null");
-
-// this.out("null");
-
-// this.out("null");
-
-// console.error("JSXMemberExpression not currently supported at react Namepace");
-
-// this.out("null");
+  
