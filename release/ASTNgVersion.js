@@ -1133,6 +1133,7 @@
         _myTrait_.DOMJSXOpeningElement = function (node, ctx) {
 
 
+          var ctx_name = this._ctxName || "this";
           var elemName, objName;
           var _hasClosure = false;
 
@@ -1260,7 +1261,8 @@
 
 
             // in variable in case becaomes option at some point
-            var stateless_call_str = ".call({},";
+
+            var stateless_call_str = ".call("+ctx_name+",";
 
             // optimize if possible: stateless without spread attributes can be only a function call...
             if(this._stateless) {
@@ -1355,7 +1357,7 @@
             } else {
 
               if (objName) {
-                this.out("e = " + objName + "." + elemName + ".apply(new self(),[_1]);", true);
+                this.out("e = " + objName + "." + elemName + ".apply(new self(),[_0]);", true);
               } else {
                 this.out("e = " + (this._compNs ? this._compNs+"." : "")+elemName + ".apply(new self(),[_0]);", true);
               }
