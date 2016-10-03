@@ -1259,6 +1259,13 @@
           } else {
 
 
+            // in variable in case becaomes option at some point
+            var stateless_call_str = ".call({},{";
+
+            if(this._stateless) stateless_call_str = "(";
+
+
+
             // optimize if possible: stateless without spread attributes can be only a function call...
             if(this._stateless) {
               var has_spread = false;
@@ -1271,7 +1278,7 @@
               if(!has_spread) {
 
                 if (objName) {
-                  this.out(objName + "." + elemName + ".call({},{",true);
+                  this.out(objName + "." + elemName + stateless_call_str+"{");
                   this.indent(1);
                   this.attributesToObjectExpression(node,ctx);
                   if(node.attributes.length>0) this.out(",", true);
@@ -1281,7 +1288,7 @@
 
                   this.out("})", true);
                 } else {
-                  this.out((this._compNs ? this._compNs+"." : "")+elemName + ".call({},{", true);
+                  this.out((this._compNs ? this._compNs+"." : "")+elemName + stateless_call_str+"{");
                     this.indent(1);
                   this.attributesToObjectExpression(node,ctx);
                   if(node.attributes.length>0) this.out(",",true);
@@ -1345,9 +1352,9 @@
 
             if(this._stateless) {
               if (objName) {
-                this.out("e = " + objName + "." + elemName + ".call({},_0);", true);
+                this.out("e = " + objName + "." + elemName + stateless_call_str + "_0);", true);
               } else {
-                this.out("e = " + (this._compNs ? this._compNs+"." : "")+elemName + ".call({},_0);", true);
+                this.out("e = " + (this._compNs ? this._compNs+"." : "")+elemName + stateless_call_str + "_0);", true);
               }              
             } else {
 
