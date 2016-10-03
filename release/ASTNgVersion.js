@@ -1133,15 +1133,9 @@
         _myTrait_.DOMJSXOpeningElement = function (node, ctx) {
 
 
-          this.out("(function() { ", true);
-          this.indent(1);
-          // this.out("var e,me=this;", true);
-
-          // removed me from the init
-          this.out("var e;", true);
-          
-
           var elemName, objName;
+          var _hasClosure = false;
+
           if (node.name.type == "JSXMemberExpression") {
             var obj = node.name;
             if (obj.object.name == ctx.ns) {
@@ -1156,10 +1150,18 @@
           }
 
 
-          if(this._noPredefinedComponents) console.log("Nothing predefined");
+          // if(this._noPredefinedComponents) console.log("Nothing predefined");
 
           // Allowed elem names etc...
           if (!this._noPredefinedComponents && !objName && _elemNamesList.indexOf(elemName) >= 0) {
+
+            ctx.__openParent._hasClosure = true;
+            _hasClosure = true;
+
+            this.out("(function() { ", true);
+            this.indent(1);
+            this.out("var e;", true);            
+
             this.out("e=document.createElement('" + elemName + "');", true);
 
             if (node.attributes && node.attributes.length) {
@@ -1255,8 +1257,44 @@
               }
             } else {}
           } else {
-            // custom element
-            // remove the "parent"
+
+
+            // optimize if possible: stateless without spread attributes can be only a function call...
+            if(this._stateless) {
+              var has_spread = false;
+              if (node.attributes && node.attributes.length) {
+                for (var i = 0; i < node.attributes.length; i++) {
+                  var a = node.attributes[i];
+                  if( a.type=="JSXSpreadAttribute" ) has_spread = true;
+                }
+              } 
+              if(!has_spread) {
+
+                if (objName) {
+                  this.out(objName + "." + elemName + ".call({},{",true);
+                  this.attributesToObjectExpression(node,ctx);
+                  this.out("})", true);
+                } else {
+                  this.out((this._compNs ? this._compNs+"." : "")+elemName + ".call({},{", true);
+                  this.attributesToObjectExpression(node,ctx);
+                  if(node.attributes.length>0) this.out(",");
+                  this.out("children : ");
+                  this.childNodesToArray( ctx.__openParent, ctx );
+                  this.out("})", true);
+                }   
+                ctx.__custom = true;
+                return;
+              }
+
+            }
+
+            ctx.__openParent._hasClosure = true;
+            _hasClosure = true;
+
+            this.out("(function() { ", true);
+            this.indent(1);
+            this.out("var e;", true);  
+
 
             if(!this._stateless) {
               this.out("var self = function(){};",true);
@@ -1286,12 +1324,7 @@
 
                   continue;              
                 }                  
-                // if (i > 0) this.out(",", true);
-                // this.out("__argv[key]="+fromParam+"[key];", true);
-                // console.log("Attribute ", a);
                 this.walk(node.attributes[i], ctx);
-                // }
-                
                 had_attrs = true;
               }
             }
@@ -1329,7 +1362,7 @@
             // this.out("]);", true);
           }
 
-          if (node.selfClosing) {
+          if (node.selfClosing && _hasClosure) {
             this.out("return e;");
             this.indent(-1);
             this.out("}).call(this)", true);
@@ -1393,6 +1426,25 @@
           this.out("]");
 
 
+        }
+
+        _myTrait_.attributesToObjectExpression = function(node,ctx) {
+            var prevFnState = ctx._fnCall;
+            var prevAssignState = ctx._fnAssignVars;
+            ctx._fnCall = true;   
+            ctx._fnAssignVars = false;            
+
+            var had_attrs = false;
+            if (node.attributes && node.attributes.length) {
+              for (var i = 0; i < node.attributes.length; i++) {
+                if (i > 0) this.out(",", true);
+                var a = node.attributes[i];                 
+                this.walk(node.attributes[i], ctx);
+              }
+            }
+            ctx._fnCall = prevFnState;   
+            ctx._fnAssignVars = prevAssignState;            
+       
         }
 
         _myTrait_.DOMJSXElement = function (node, ctx) {
@@ -1467,6 +1519,7 @@
               }
             }
           }
+          ctx.__openParent = node;
           this.walk(node.closingElement, ctx);
 
 
@@ -1477,9 +1530,12 @@
           ctx._inJSX = inJsx;
         };
         _myTrait_.DOMJSXClosingElement = function (node, ctx) {
-          this.out("return e;", true);
-          this.indent(-1);
-          this.out("}).call(this)", true);
+          if(ctx.__openParent._hasClosure) {
+            this.out("return e;", true);
+            this.indent(-1);
+            this.out("}).call(this)", true);            
+          }
+
         };
       };
 
