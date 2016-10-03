@@ -1262,10 +1262,6 @@
             // in variable in case becaomes option at some point
             var stateless_call_str = ".call({},{";
 
-            if(this._stateless) stateless_call_str = "(";
-
-
-
             // optimize if possible: stateless without spread attributes can be only a function call...
             if(this._stateless) {
               var has_spread = false;
