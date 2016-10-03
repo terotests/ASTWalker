@@ -1329,8 +1329,8 @@
                   var fromParam = a.argument.name;
                   this.out("Object.keys("+fromParam+").forEach(function(k){", true);
                       this.indent(1);
-                      this.out("if(k=='children') return;", true);
-                      this.out("if(typeof("+fromParam+"[k])!='string') return;", true);
+                      // this.out("if(k=='children') return;", true);
+                      this.out("if(typeof("+fromParam+"[k])!='string' && typeof("+fromParam+"[k])!='number') return;", true);
                       this.out("_0[k]="+fromParam+"[k];", true);
                       this.indent(-1);
                   this.out("});", true);
