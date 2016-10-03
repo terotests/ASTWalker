@@ -1272,14 +1272,22 @@
 
                 if (objName) {
                   this.out(objName + "." + elemName + ".call({},{",true);
+                  this.indent(1);
                   this.attributesToObjectExpression(node,ctx);
+                  if(node.attributes.length>0) this.out(",", true);
+                  this.out("children : ");
+                  this.childNodesToArray( ctx.__openParent, ctx );
+                  this.indent(-1);
+
                   this.out("})", true);
                 } else {
                   this.out((this._compNs ? this._compNs+"." : "")+elemName + ".call({},{", true);
+                    this.indent(1);
                   this.attributesToObjectExpression(node,ctx);
-                  if(node.attributes.length>0) this.out(",");
+                  if(node.attributes.length>0) this.out(",",true);
                   this.out("children : ");
                   this.childNodesToArray( ctx.__openParent, ctx );
+                  this.indent(-1);
                   this.out("})", true);
                 }   
                 ctx.__custom = true;
@@ -1395,6 +1403,10 @@
             for (var i = 0; i < node.children.length; i++) {
               var child = node.children[i];
               if (child.type == "JSXElement") {    
+                if(ch_cnt==0) {
+                  this.out("", true);
+                  this.indent(1);
+                }
                 if(ch_cnt > 0 ) this.out(",");            
                 this.walk(child, ctx);
                 ch_cnt++;
@@ -1405,6 +1417,10 @@
                 if (typeof value == "string") {
                   if(this._ignoreText) {
                     continue;
+                  }
+                  if(ch_cnt==0) {
+                    this.out("", true);
+                    this.indent(1);
                   }
                   if(ch_cnt > 0 ) this.out(",");   
                   var lines = value.split("\n");
@@ -1417,11 +1433,19 @@
                 ch_cnt++;
               }
               if (child.type == "JSXExpressionContainer") {
+                if(ch_cnt==0) {
+                  this.out("", true);
+                  this.indent(1);
+                }
                 if(ch_cnt > 0 ) this.out(",");   
                 this.walk(child, ctx);
                 ch_cnt++;
               }
             }
+          }
+          if(ch_cnt>0) {
+                  this.out("", true);
+                  this.indent(-1);
           }
           this.out("]");
 
