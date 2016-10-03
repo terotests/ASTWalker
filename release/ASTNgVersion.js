@@ -1096,7 +1096,7 @@
         // _fnCall indicates the result is a key-value of an object expression
         _myTrait_.DOMJSXAttribute = function (node, ctx) {
           if(ctx._fnAssignVars) {
-                this.out("__argv[");
+                this.out("_0[");
           } 
           this.out("\"");
           if (node.name.type == "JSXNamespacedName") {
@@ -1132,9 +1132,14 @@
 
         _myTrait_.DOMJSXOpeningElement = function (node, ctx) {
 
+
           this.out("(function() { ", true);
           this.indent(1);
-          this.out("var e,me=this;", true);
+          // this.out("var e,me=this;", true);
+
+          // removed me from the init
+          this.out("var e;", true);
+          
 
           var elemName, objName;
           if (node.name.type == "JSXMemberExpression") {
@@ -1196,6 +1201,8 @@
                     }
 
                   } else {
+                    // ignore this setting so that "me" is no longer needed
+                    /*
                     this.trigger("JSXEventListener", {
                       event: eventName,
                       fn: attrName,
@@ -1206,6 +1213,7 @@
                     this.out("e.addEventListener('" + eventName + "', function(event){me['" + attrName + "'](");
                     this.walk(node.attributes[i].value, ctx);
                     this.out(")});", true);
+                    */
                   }
                   continue;
                 }
@@ -1249,15 +1257,18 @@
           } else {
             // custom element
             // remove the "parent"
-            this.out("var self = function(){ this._parent = me;};",true);
-            this.out("self.prototype = this;", true);
+
+            if(!this._stateless) {
+              this.out("var self = function(){};",true);
+              this.out("self.prototype = this;", true);
+            }
 
             var prevFnState = ctx._fnCall;
             var prevAssignState = ctx._fnAssignVars;
             ctx._fnCall = true;   
             ctx._fnAssignVars = true;            
 
-            this.out("var __argv={};", true);
+            this.out("var _0={};", true);
             var had_attrs = false;
             if (node.attributes && node.attributes.length) {
               for (var i = 0; i < node.attributes.length; i++) {
@@ -1265,11 +1276,11 @@
                 if(a.type=="JSXSpreadAttribute") {
                   
                   var fromParam = a.argument.name;
-                  this.out("Object.keys("+fromParam+").forEach(function(key){", true);
+                  this.out("Object.keys("+fromParam+").forEach(function(k){", true);
                       this.indent(1);
-                      this.out("if(key=='children') return;", true);
-                      this.out("if(typeof("+fromParam+"[key])!='string') return;", true);
-                      this.out("__argv[key]="+fromParam+"[key];", true);
+                      this.out("if(k=='children') return;", true);
+                      this.out("if(typeof("+fromParam+"[k])!='string') return;", true);
+                      this.out("_0[k]="+fromParam+"[k];", true);
                       this.indent(-1);
                   this.out("});", true);
 
@@ -1285,16 +1296,25 @@
               }
             }
             // if(had_attrs) this.out(",", true);
-            this.out("__argv.children = ");
+            this.out("_0.children = ");
             this.childNodesToArray( ctx.__openParent, ctx );
             ctx.__custom = true;
             // this.indent(-1);
             this.out(";", true);
 
-            if (objName) {
-              this.out("e = " + objName + "." + elemName + ".apply(new self(),[__argv]);", true);
+            if(this._stateless) {
+              if (objName) {
+                this.out("e = " + objName + "." + elemName + ".call({},_0);", true);
+              } else {
+                this.out("e = " + (this._compNs ? this._compNs+"." : "")+elemName + ".call({},_0);", true);
+              }              
             } else {
-              this.out("e = " + (this._compNs ? this._compNs+"." : "")+elemName + ".apply(new self(),[__argv]);", true);
+
+              if (objName) {
+                this.out("e = " + objName + "." + elemName + ".apply(new self(),[_1]);", true);
+              } else {
+                this.out("e = " + (this._compNs ? this._compNs+"." : "")+elemName + ".apply(new self(),[_0]);", true);
+              }
             }
             this.trigger("JSXCustomElement", {
               obj: objName,
@@ -1312,7 +1332,7 @@
           if (node.selfClosing) {
             this.out("return e;");
             this.indent(-1);
-            this.out("}).apply(this,[])", true);
+            this.out("}).call(this)", true);
           } else {}
         };
         _myTrait_.DOMLiteral = function (node, ctx) {
@@ -1459,7 +1479,7 @@
         _myTrait_.DOMJSXClosingElement = function (node, ctx) {
           this.out("return e;", true);
           this.indent(-1);
-          this.out("}).apply(this,[])", true);
+          this.out("}).call(this)", true);
         };
       };
 
@@ -2759,6 +2779,7 @@
         walker._compNs = scriptElem.getAttribute("component_ns");
         walker._noPredefinedComponents = scriptElem.getAttribute("pure");
         walker._ignoreText = scriptElem.getAttribute("ignore_text");
+        walker._stateless = scriptElem.getAttribute("stateless");
 
         walker.startWalk(rawAST, walker.createContext());
         var strCode = walker.getCode();
