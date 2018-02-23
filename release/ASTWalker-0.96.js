@@ -1611,7 +1611,7 @@
             } else {}
           } else {
             if (node.name) {
-              if(/[A-Z]/.test(node.name.name)) {
+              if(/[A-Z]/.test(node.name.name[0])) {
                 this.out(node.name.name + ",", true);
               }else {
                 this.out("\"" + node.name.name + "\",", true);
