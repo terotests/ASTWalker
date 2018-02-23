@@ -1702,8 +1702,10 @@ _myTrait_.FRZRJSXAttribute = function(node, ctx) {
             // console.error("JSXMemberExpression not currently supported at react Namepace");
         }
     } else {
-        if(node.name) {
-          this.out("\""+node.name.name+"\",",true);
+        if(/[A-Z]/.test(node.name.name)) {
+            this.out(node.name.name + ",", true);
+        }else {
+            this.out("\"" + node.name.name + "\",", true);
         }
     }
     if(node.attributes && node.attributes.length) {
