@@ -1703,7 +1703,11 @@ _myTrait_.FRZRJSXAttribute = function(node, ctx) {
         }
     } else {
         if(node.name) {
-          this.out("\""+node.name.name+"\",",true);
+            if(/[A-Z]/.test(node.name.name)) {
+                this.out(node.name.name + ",", true);
+            }else {
+                this.out("\"" + node.name.name + "\",", true);
+            }
         }
     }
     if(node.attributes && node.attributes.length) {
