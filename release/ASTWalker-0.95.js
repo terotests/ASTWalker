@@ -2959,12 +2959,9 @@
           }
         });
         var ns = "DOM";
-        var toES5 = false;
+        var toES5 = true;
         if (scriptElem.getAttribute("ns")) {
           ns = scriptElem.getAttribute("ns");
-        }
-        if (scriptElem.getAttribute("toES5")) {
-          toES5 = true
         }
         var walker = ASTWalker({
           defaultNamespace: ns,
