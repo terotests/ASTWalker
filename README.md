@@ -26,11 +26,15 @@ https://github.com/terotests/ASTWalker/blob/master/release/ASTWalker-0.95.js#L27
 
 When "SVG" is the current namespace, the ASTWalker first looks for `SVGJSXElement` instead of `JSXElement` and calls it, if the function is found. If it is not found, then the function without prefix gets called.
 
+`noOutput` will disable code generation (output string), it will just walk the AST tree and generate context variables. This is useful when evaluating some statistics of the code and not actually using the end result output.
+
 `defaultNamespace` is the initial namespace, the default prefix for the function used to walk the AST nodes from the beginning. 
+
+`forceNamespace` is the same as `defaultNamepace`, but it will not allow automatic SVG namespace detection to change the initial namespace to something else based on node type.
 
 `toES5` transpiles arrow functions to ES5, but does not try to do anything more at the moment.
 
-`forceNamespace` is the same as `defaultNamepace`, but it will not allow automatic SVG namespace detection to change the initial namespace to something else based on node type.
+
 
 
 
