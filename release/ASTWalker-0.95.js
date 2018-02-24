@@ -1601,10 +1601,8 @@
           this.walk(node.value, ctx);
         };
         _myTrait_.reactJSXOpeningElement = function (node, ctx) {
-          console.log("reactJSXOpeningElement at namepace " + ctx.ns);
           this.out("React.createElement(", true);
           this.indent(1);
-
           if (node.name.type == "JSXMemberExpression") {
             var obj = node.name;
             if (obj.object.name == "react") {
@@ -1612,7 +1610,11 @@
             } else {}
           } else {
             if (node.name) {
-              this.out("\"" + node.name.name + "\",", true);
+              if(/[A-Z]/.test(node.name.name)) {
+                this.out(node.name.name + ",", true);
+              }else {
+                this.out("\"" + node.name.name + "\",", true);
+              }
             }
           }
           if (node.attributes && node.attributes.length) {
@@ -2978,13 +2980,3 @@
     }
   }, 1);
 }).call(new Function("return this")());
-
-// this.out("null");
-
-// this.out("null");
-
-// this.out("null");
-
-// console.error("JSXMemberExpression not currently supported at react Namepace");
-
-// this.out("null");
