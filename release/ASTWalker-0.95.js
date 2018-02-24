@@ -2959,12 +2959,16 @@
           }
         });
         var ns = "DOM";
+        var toES5 = false;
         if (scriptElem.getAttribute("ns")) {
           ns = scriptElem.getAttribute("ns");
         }
+        if (scriptElem.getAttribute("toES5")) {
+          toES5 = true
+        }
         var walker = ASTWalker({
           defaultNamespace: ns,
-          toES5: true
+          toES5: toES5
         });
         walker.startWalk(rawAST, walker.createContext());
         var strCode = walker.getCode();
