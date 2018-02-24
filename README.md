@@ -32,7 +32,7 @@ When "SVG" is the current namespace, the ASTWalker first looks for `SVGJSXElemen
 
 `forceNamespace` is the same as `defaultNamepace`, but it will not allow automatic SVG namespace detection to change the initial namespace to something else based on node type.
 
-`toES5` (NOTE: has a bug now) transpiles arrow functions to ES5, but does not try to do anything more at the moment.
+`toES5` (NOTE: current must be set to `true`, arrow functions have a bug) transpiles arrow functions to ES5, but does not try to do anything more at the moment.
 
 
 
